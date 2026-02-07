@@ -1,5 +1,8 @@
 /target
+/releases
 *.swp
 *.swo
 *~
 .DS_Store
+/test-contracts
+/.intentionally-empty-file.o
