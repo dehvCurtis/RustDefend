@@ -2,11 +2,13 @@
 
 **Priority:** P2 (Coverage expansion)
 **Estimated Effort:** Large
-**Status:** Planned
+**Status:** DONE
 
 ## Summary
 
-Add 9 new detectors targeting emerging 2024-2025 vulnerability classes. Total detector count: 32 -> 41.
+Add 8 new detectors targeting emerging 2024-2025 vulnerability classes. Total detector count: 32 -> 40.
+
+**Note:** CW-008 (Unsafe cosmwasm-std Version) was absorbed into DEP-001 (Outdated Dependencies), which covers all vulnerable crate versions including cosmwasm-std. This reduced the count from 9 planned to 8 implemented.
 
 ---
 
@@ -220,9 +222,9 @@ pub fn proxy_call(&mut self, target_hash: Hash, input: Vec<u8>) {
 
 ## Verification
 
-- [ ] Each detector has 2+ test cases (vulnerable + safe)
-- [ ] `cargo build` compiles
-- [ ] `cargo test` — all tests pass (70 existing + ~20 new)
-- [ ] `cargo run -- list-detectors` shows 41 detectors
-- [ ] Re-scan test contracts with new detectors
-- [ ] No regressions in existing 32 detectors
+- [x] Each detector has 2+ test cases (vulnerable + safe)
+- [x] `cargo build` compiles
+- [x] `cargo test` — all 95 tests pass
+- [x] `cargo run -- list-detectors` shows 40 detectors
+- [x] Re-scan test contracts with new detectors — 691 findings across 7 repos
+- [x] No regressions in existing 32 detectors

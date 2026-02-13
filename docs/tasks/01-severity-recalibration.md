@@ -2,7 +2,7 @@
 
 **Priority:** P0 (Quick Win)
 **Estimated Effort:** Small
-**Status:** Planned
+**Status:** DONE
 
 ## Summary
 
@@ -43,11 +43,11 @@ Adjust severity and confidence levels for 5 detectors based on 2024+ ecosystem r
 
 ## Verification
 
-- [ ] `cargo build` compiles without errors
-- [ ] `cargo test` — all 70 tests pass
-- [ ] `cargo run -- list-detectors` shows updated severity/confidence
-- [ ] Re-scan test contracts — verify CW-001/INK-002 no longer appear under `--severity critical`
-- [ ] JSON output reflects new severity values
+- [x] `cargo build` compiles without errors
+- [x] `cargo test` — all tests pass
+- [x] `cargo run -- list-detectors` shows updated severity/confidence
+- [x] Re-scan test contracts — CW-001/INK-002 no longer appear under `--severity critical`
+- [x] JSON output reflects new severity values
 
 ## Impact
 

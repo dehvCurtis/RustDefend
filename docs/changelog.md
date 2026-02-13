@@ -7,7 +7,7 @@ Initial release.
 ### Detectors (40)
 
 - **Solana (11):** SOL-001 through SOL-011
-- **CosmWasm (8):** CW-001 through CW-009
+- **CosmWasm (8):** CW-001 through CW-007, CW-009
 - **NEAR (10):** NEAR-001 through NEAR-010
 - **ink! (10):** INK-001 through INK-010
 - **Cross-chain (1):** DEP-001
@@ -50,3 +50,16 @@ INK-003 (missing caller check) risk stratification:
 - Critical: transfers value without auth
 - High: general storage writes without caller check
 - Medium/Low: payable or caller-scoped writes (likely permissionless by design)
+
+### Ground Truth Baseline (2026-02-13)
+
+Re-ran baseline with all 40 detectors against pinned test corpus commits. See `GROUND_TRUTH_BASELINE.md`.
+
+- **691 total findings** across 7 test repositories (up from 605 with 32 detectors)
+- **95 unit tests**, all passing
+- **No regressions** in any of the original 32 detectors
+- **+86 new findings** from Task 4 detectors: SOL-010 (+48), NEAR-010 (+19), CW-009 (+17), INK-010 (+6), SOL-011 (+2)
+- **~56% estimated true positive rate** (down from ~59% due to SOL-010 FPs on Anchor codegen)
+- All test corpus commits pinned for reproducibility
+- 11 detectors with zero findings documented with reasons
+- Coverage gaps updated to reflect 2024-2026 threat landscape

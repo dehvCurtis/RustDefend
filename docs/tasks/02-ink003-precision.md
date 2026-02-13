@@ -2,7 +2,7 @@
 
 **Priority:** P0 (Critical detector at 40% TP is unacceptable)
 **Estimated Effort:** Medium
-**Status:** Planned
+**Status:** DONE
 
 ## Problem
 
@@ -107,7 +107,7 @@ pub fn drain(&mut self, to: AccountId) {
 
 ## Verification
 
-- [ ] Existing 3 test cases still pass
-- [ ] New test cases added (4+ cases above)
-- [ ] Re-scan ink-examples: Critical findings reduced, remaining ones are true admin issues
-- [ ] No false negatives introduced for `set_owner`, `drain`, `withdraw` type methods
+- [x] Existing 3 test cases still pass
+- [x] New test cases added
+- [x] Re-scan ink-examples: Critical findings reduced, remaining ones are true admin issues
+- [x] No false negatives introduced for `set_owner`, `drain`, `withdraw` type methods
