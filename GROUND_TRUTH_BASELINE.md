@@ -292,90 +292,34 @@ Based on 2024-2026 vulnerability research, the following emerging threat categor
 
 ## Test Fixture Baseline
 
-Test fixtures include both minimal pattern triggers and real-world vulnerable contracts (from [BlockSecOps/vulnerable-smart-contract-examples](https://github.com/BlockSecOps/vulnerable-smart-contract-examples)).
+Test fixtures include minimal pattern triggers, real-world vulnerable contracts (from [BlockSecOps/vulnerable-smart-contract-examples](https://github.com/BlockSecOps/vulnerable-smart-contract-examples)), and dedicated vulnerability-pattern fixtures for every detector.
+
+**All 50/50 detectors have fixture coverage** producing **159 total findings**.
 
 ### Fixture Finding Counts
 
 ```
 Chain       Total  Detectors Triggered
 ────────────────────────────────────────────────────────
-Solana        56   SOL-002:6  SOL-003:22  SOL-004:10  SOL-005:8
-                   SOL-006:1  SOL-007:1   SOL-008:2   SOL-012:2
+Solana        67   SOL-001:2  SOL-002:6  SOL-003:22  SOL-004:10
+                   SOL-005:9  SOL-006:3  SOL-007:1   SOL-008:2
+                   SOL-009:2  SOL-010:2  SOL-011:2   SOL-012:2
                    SOL-013:2  SOL-014:2
-CosmWasm      13   CW-001:1   CW-003:1    CW-004:2    CW-006:1
-                   CW-007:2   CW-008:3    CW-010:2    CW-011:1
-NEAR          13   NEAR-001:2 NEAR-003:3  NEAR-007:2  NEAR-009:2
-                   NEAR-011:1 NEAR-012:3
-ink!          15   INK-001:2  INK-004:3   INK-005:2   INK-007:3
-                   INK-009:2  INK-010:1   INK-011:2
+CosmWasm      19   CW-001:2   CW-002:2   CW-003:1    CW-004:2
+                   CW-005:1   CW-006:1   CW-007:2    CW-008:3
+                   CW-009:2   CW-010:2   CW-011:1
+NEAR          34   NEAR-001:4 NEAR-002:2 NEAR-003:3  NEAR-004:2
+                   NEAR-005:4 NEAR-006:3 NEAR-007:2  NEAR-008:3
+                   NEAR-009:2 NEAR-010:2 NEAR-011:1  NEAR-012:6
+ink!          30   INK-001:2  INK-002:3  INK-003:6   INK-004:3
+                   INK-005:2  INK-006:3  INK-007:3   INK-008:2
+                   INK-009:2  INK-010:2  INK-011:2
 DEP            9   DEP-001:6  DEP-002:3
 ────────────────────────────────────────────────────────
-TOTAL        106
+TOTAL        159   50/50 detectors covered
 ```
 
-### Fixture Coverage by Detector
-
-| Detector | Fixture Coverage | Findings |
-|----------|-----------------|----------|
-| SOL-002 | `arithmetic_errors.rs`, `missing_owner_check.rs`, `account_data_matching.rs`, `remaining_accounts_unsafe.rs` | 6 |
-| SOL-003 | `arithmetic_errors.rs`, `missing_signer_check.rs`, `missing_owner_check.rs`, `type_confusion.rs`, `pda_issues.rs`, `reinitialization.rs`, `rent_exemption.rs`, `account_data_matching.rs`, `remaining_accounts_unsafe.rs` | 22 |
-| SOL-004 | `arithmetic_errors.rs`, `missing_owner_check.rs`, `type_confusion.rs`, `pda_issues.rs`, `reinitialization.rs`, `rent_exemption.rs`, `account_data_matching.rs` | 10 |
-| SOL-005 | `arithmetic_errors.rs`, `missing_signer_check.rs`, `missing_owner_check.rs`, `pda_issues.rs`, `reinitialization.rs`, `rent_exemption.rs`, `account_data_matching.rs`, `remaining_accounts_unsafe.rs` | 8 |
-| SOL-006 | `arbitrary_cpi.rs` | 1 |
-| SOL-007 | `pda_issues.rs` | 1 |
-| SOL-008 | `unchecked_cpi.rs` | 2 |
-| SOL-012 | `token2022_unsafe.rs` | 2 |
-| SOL-013 | `remaining_accounts_unsafe.rs` | 2 |
-| SOL-014 | `init_if_needed_unsafe.rs` | 2 |
-| CW-003 | `missing_sender.rs` | 1 |
-| CW-004 | `storage_collision.rs` | 2 |
-| CW-007 | `unbounded_iteration.rs` | 2 |
-| CW-008 | `unsafe_ibc.rs` | 3 |
-| CW-010 | `unguarded_migrate.rs` | 2 |
-| CW-011 | `missing_reply_id.rs` | 1 |
-| NEAR-001 | `unguarded_pending.rs` | 2 |
-| NEAR-003 | `storage_no_auth.rs` | 3 |
-| NEAR-007 | `unguarded_pending.rs` | 2 |
-| NEAR-009 | `unsafe_storage_key.rs` | 2 |
-| NEAR-011 | `unguarded_storage_unregister.rs` | 1 |
-| NEAR-012 | `missing_gas_callback.rs`, `storage_no_auth.rs` | 3 |
-| INK-001 | `allow_reentry.rs` | 2 |
-| INK-004 | `timestamp_compare.rs` | 3 |
-| INK-005 | `allow_reentry.rs` | 2 |
-| INK-007 | `timestamp_compare.rs` | 3 |
-| INK-009 | `unsafe_delegate.rs` | 2 |
-| INK-010 | `allow_reentry.rs` | 1 |
-| INK-011 | `unguarded_set_code_hash.rs` | 2 |
-| DEP-001 | `Cargo.toml` | 6 |
-| DEP-002 | `Cargo.toml` | 3 |
-
-### Detectors Without Fixture Coverage
-
-These detectors have zero findings in fixtures (covered only by unit tests):
-
-| Detector | Reason |
-|----------|--------|
-| SOL-001 (missing-signer-check) | Fixture uses `&[AccountInfo]` slice, not individual params |
-| SOL-009 (cpi-reentrancy) | No CEI violation pattern in fixtures |
-| SOL-010 (unsafe-pda-seeds) | Fixture PDAs include user-specific seeds |
-| SOL-011 (missing-rent-exempt) | Fixture uses different rent pattern |
-| CW-001 (integer-overflow) | Only 1 incidental finding from `unsafe_ibc.rs` |
-| CW-002 (reentrancy) | No CEI violation in fixtures |
-| CW-005 (unchecked-query) | No query pattern in fixtures |
-| CW-006 (improper-error) | Only 1 incidental finding from `missing_reply_id.rs` |
-| CW-009 (addr-validation) | No `Addr::unchecked` in fixtures |
-| NEAR-002 (signer-vs-predecessor) | No `signer_account_id` in fixtures |
-| NEAR-004 (callback-unwrap) | No `#[callback_unwrap]` in fixtures |
-| NEAR-005 (wrapping-arithmetic) | No `wrapping_*` in fixtures |
-| NEAR-006 (missing-private) | No `on_*` functions without `#[private]` in fixtures |
-| NEAR-008 (frontrunning) | No `Promise::new().transfer()` pattern |
-| NEAR-010 (missing-deposit) | No `#[payable]` functions in fixtures |
-| INK-002 (integer-overflow) | No Balance/u128 arithmetic in fixtures |
-| INK-003 (missing-caller) | No `#[ink(message)]` with `&mut self` in fixtures |
-| INK-006 (cross-contract) | No `try_invoke()` in fixtures |
-| INK-008 (result-suppression) | No `let _ = result` in fixtures |
-
-See `test-fixtures/README.md` for details and usage.
+See `test-fixtures/README.md` for full fixture inventory and per-detector coverage.
 
 ---
 
