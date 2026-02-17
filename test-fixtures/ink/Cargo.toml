@@ -1,0 +1,7 @@
+[package]
+name = "ink-fixtures"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ink = "5.1.0"

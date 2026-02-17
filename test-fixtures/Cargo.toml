@@ -1,0 +1,27 @@
+# DEP-001: Outdated dependencies with known CVEs
+# This Cargo.toml intentionally uses vulnerable dependency versions for testing.
+# DO NOT use these versions in production.
+
+[package]
+name = "vulnerable-deps"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Vulnerable: < 0.28.0 (account validation fixes)
+anchor-lang = "0.27.0"
+
+# Vulnerable: < 1.16.0 (runtime fixes)
+solana-program = "1.14.0"
+
+# Vulnerable: < 1.4.4 (CWA-2024-002 / CVE-2024-58263, arithmetic overflows)
+cosmwasm-std = "1.3.0"
+
+# Vulnerable: < 1.5.8 (CWA-2025-001, excessive memory consumption)
+cosmwasm-vm = "1.5.0"
+
+# Vulnerable: < 4.0.0 (legacy callback issues)
+near-sdk = "3.1.0"
+
+# Vulnerable: < 4.0.0 (pre-reentrancy-default)
+ink = "3.4.0"

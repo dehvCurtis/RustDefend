@@ -1,0 +1,8 @@
+[package]
+name = "cosmwasm-fixtures"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+cosmwasm-std = "2.0.4"
+cw-storage-plus = "2.0.0"
