@@ -8,6 +8,7 @@ use rayon::prelude::*;
 use walkdir::WalkDir;
 
 use crate::detectors::common::outdated_deps::OutdatedDepsDetector;
+use crate::detectors::common::supply_chain::SupplyChainDetector;
 use crate::detectors::DetectorRegistry;
 use crate::utils::chain_detect;
 use context::ScanContext;
@@ -112,13 +113,16 @@ impl Scanner {
             })
             .collect();
 
-        // Run DEP-001 on Cargo.toml files
+        // Run DEP-001 and DEP-002 on Cargo.toml files
         let mut findings = findings;
         let dep_detector = OutdatedDepsDetector;
+        let sc_detector = SupplyChainDetector;
         let cargo_tomls = Self::collect_cargo_tomls(path);
-        for cargo_toml in cargo_tomls {
-            let dep_findings = dep_detector.detect_cargo_toml(&cargo_toml);
+        for cargo_toml in &cargo_tomls {
+            let dep_findings = dep_detector.detect_cargo_toml(cargo_toml);
             findings.extend(dep_findings);
+            let sc_findings = sc_detector.detect_cargo_toml(cargo_toml);
+            findings.extend(sc_findings);
         }
 
         // Apply confidence filter

@@ -88,6 +88,30 @@
     "chain": "solana"
   },
   {
+    "id": "SOL-012",
+    "name": "token-2022-extension-safety",
+    "description": "Detects programs accepting Token-2022 tokens without checking for dangerous extensions",
+    "severity": "High",
+    "confidence": "Medium",
+    "chain": "solana"
+  },
+  {
+    "id": "SOL-013",
+    "name": "unsafe-remaining-accounts",
+    "description": "Detects ctx.remaining_accounts usage without owner/type/key validation",
+    "severity": "High",
+    "confidence": "Medium",
+    "chain": "solana"
+  },
+  {
+    "id": "SOL-014",
+    "name": "init-if-needed-reinitialization",
+    "description": "Detects Anchor init_if_needed constraint without guard checks against reinitialization",
+    "severity": "High",
+    "confidence": "Medium",
+    "chain": "solana"
+  },
+  {
     "id": "CW-001",
     "name": "cosmwasm-integer-overflow",
     "description": "Detects unchecked arithmetic on Uint128/Uint256 types",
@@ -139,6 +163,14 @@
     "id": "CW-007",
     "name": "unbounded-iteration",
     "description": "Detects .range() or .iter() without .take() in execute handlers",
+    "severity": "High",
+    "confidence": "Medium",
+    "chain": "cosmwasm"
+  },
+  {
+    "id": "CW-008",
+    "name": "unsafe-ibc-entry-points",
+    "description": "Detects IBC packet handlers without channel validation or proper timeout rollback",
     "severity": "High",
     "confidence": "Medium",
     "chain": "cosmwasm"
@@ -315,6 +347,14 @@
     "id": "DEP-001",
     "name": "outdated-dependencies",
     "description": "Detects known-vulnerable dependency versions in Cargo.toml",
+    "severity": "High",
+    "confidence": "High",
+    "chain": "common"
+  },
+  {
+    "id": "DEP-002",
+    "name": "supply-chain-risk",
+    "description": "Detects wildcard versions, unpinned git deps, and known-malicious crate names in Cargo.toml",
     "severity": "High",
     "confidence": "High",
     "chain": "common"

@@ -2,7 +2,7 @@
 
 Static security scanner for Rust smart contracts. Analyzes source code via AST parsing (`syn` crate) to detect vulnerabilities across Solana, CosmWasm, NEAR, and ink! ecosystems.
 
-- **40 detectors** covering the most common smart contract vulnerability classes
+- **45 detectors** covering the most common smart contract vulnerability classes
 - **AST-based analysis** — parses Rust source into syntax trees, no regex pattern matching
 - **Auto-detects chain** from `Cargo.toml` dependencies (solana-program, cosmwasm-std, near-sdk, ink)
 - **Parallel file processing** via `rayon` for fast scans on large codebases
@@ -55,15 +55,15 @@ rustdefend scan . --quiet
 
 ## Detectors
 
-40 detectors across 4 chains + cross-chain dependency analysis:
+45 detectors across 4 chains + cross-chain dependency analysis:
 
 | Chain | Count | Docs |
 |-------|-------|------|
-| Solana | 11 | [docs/detectors/solana/](docs/detectors/solana/) |
-| CosmWasm | 8 | [docs/detectors/cosmwasm/](docs/detectors/cosmwasm/) |
+| Solana | 14 | [docs/detectors/solana/](docs/detectors/solana/) |
+| CosmWasm | 9 | [docs/detectors/cosmwasm/](docs/detectors/cosmwasm/) |
 | NEAR | 10 | [docs/detectors/near/](docs/detectors/near/) |
 | ink! | 10 | [docs/detectors/ink/](docs/detectors/ink/) |
-| Cross-chain | 1 | [docs/detectors/common/](docs/detectors/common/) |
+| Cross-chain | 2 | [docs/detectors/common/](docs/detectors/common/) |
 
 See [docs/detectors/](docs/detectors/) for the full detector index and [all_detectors.json](docs/detectors/all_detectors.json) for machine-readable metadata.
 

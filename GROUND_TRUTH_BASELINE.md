@@ -1,14 +1,14 @@
 # RustDefend Ground Truth Baseline
 
-**Generated:** 2026-02-13
-**Scanner Version:** 0.1.0
-**Total Detectors:** 40
+**Generated:** 2026-02-16
+**Scanner Version:** 0.2.0
+**Total Detectors:** 45
 
 ---
 
 ## Detector Relevance Assessment (2024+)
 
-### Solana — 11 detectors, **10 relevant for 2024+**
+### Solana — 14 detectors, **13 relevant for 2024+**
 
 | ID | Name | Severity | 2024+ Relevant? | Notes |
 |---|---|---|---|---|
@@ -23,12 +23,15 @@
 | SOL-009 | cpi-reentrancy | Medium | **Reduced** | Solana's single-threaded execution model and account locking provide some protection. CEI violations are lower risk than on EVM chains but still flagged for defense-in-depth. |
 | SOL-010 | unsafe-pda-seeds | High | **Yes** | PDA seeds without user-specific components risk collision attacks. Neither Anchor nor runtime prevents this. Added in Task 4 for 2024+ threats. |
 | SOL-011 | missing-rent-exempt | Medium | **Yes** | Accounts without rent exemption can be garbage-collected. Anchor's `init` handles this, but native programs are exposed. Added in Task 4 for 2024+ threats. |
+| SOL-012 | token-2022-extension-safety | High | **Yes** | Programs accepting Token-2022 tokens without checking for dangerous extensions (PermanentDelegate, TransferHook, MintCloseAuthority). Actively exploited since Sep 2024. |
+| SOL-013 | unsafe-remaining-accounts | High | **Yes** | `ctx.remaining_accounts` used without owner/type validation. #1 audit finding category (Sec3 2025 report). |
+| SOL-014 | init-if-needed-reinitialization | High | **Yes** | Anchor `init_if_needed` without guard checks against reinitialization attacks. |
 
-**Summary:** 10 of 11 detectors fully relevant. SOL-009 has reduced relevance due to Solana's execution model but remains useful.
+**Summary:** 13 of 14 detectors fully relevant. SOL-009 has reduced relevance due to Solana's execution model but remains useful.
 
 ---
 
-### CosmWasm — 8 detectors, **6 relevant for 2024+**
+### CosmWasm — 9 detectors, **7 relevant for 2024+**
 
 | ID | Name | Severity | 2024+ Relevant? | Notes |
 |---|---|---|---|---|
@@ -39,9 +42,10 @@
 | CW-005 | unchecked-query-response | High | **Yes** | Cross-contract queries return unvalidated data. No framework protection. |
 | CW-006 | improper-error-handling | High | **Yes** | `unwrap()`/`panic!()` in entry points abort the transaction, potentially causing DoS or unexpected reverts. No compile-time prevention. |
 | CW-007 | unbounded-iteration | High | **Yes** | Gas limits exist but unbounded `.range()` can exceed block gas limits, causing permanent DoS on affected functionality. |
+| CW-008 | unsafe-ibc-entry-points | High | **Yes** | IBC receive/ack/timeout handlers without packet validation. $150M at risk in 2024 IBC reentrancy bug. |
 | CW-009 | cosmwasm-missing-addr-validation | High | **Yes** | `Addr::unchecked()` in non-test code allows bech32 case-variation attacks (Halborn zero-day 2024). Added in Task 4 for 2024+ threats. |
 
-**Summary:** 6 of 8 detectors fully relevant. CW-001 (Medium) is a code quality issue. CW-002 (Low) is informational due to architectural non-reentrancy.
+**Summary:** 7 of 9 detectors fully relevant. CW-001 (Medium) is a code quality issue. CW-002 (Low) is informational due to architectural non-reentrancy.
 
 ---
 
@@ -85,11 +89,12 @@
 
 ---
 
-### Cross-chain — 1 detector, **1 relevant for 2024+**
+### Cross-chain — 2 detectors, **2 relevant for 2024+**
 
 | ID | Name | Severity | 2024+ Relevant? | Notes |
 |---|---|---|---|---|
 | DEP-001 | outdated-dependencies | High | **Yes** | Detects known-vulnerable versions of cosmwasm-std (CWA-2024-002), cosmwasm-vm (CWA-2025-001), near-sdk < 4.0.0, ink < 4.0.0, anchor-lang < 0.28.0, solana-program < 1.16.0. Added in Task 4 for 2024+ threats. |
+| DEP-002 | supply-chain-risk | High | **Yes** | Detects wildcard versions, unpinned git deps, and known-malicious crate names. Multiple real supply chain attacks in 2024-2025 (rustdecimal, faster_log, etc.). |
 
 ---
 
@@ -97,16 +102,16 @@
 
 | Chain | Total | Fully Relevant | Reduced | Not Relevant |
 |---|---|---|---|---|
-| **Solana** | 11 | 10 | 1 (SOL-009) | 0 |
-| **CosmWasm** | 8 | 6 | 2 (CW-001, CW-002) | 0 |
+| **Solana** | 14 | 13 | 1 (SOL-009) | 0 |
+| **CosmWasm** | 9 | 7 | 2 (CW-001, CW-002) | 0 |
 | **NEAR** | 10 | 10 | 0 | 0 |
 | **ink!** | 10 | 8 | 2 (INK-002, INK-001*) | 0 |
-| **Cross-chain** | 1 | 1 | 0 | 0 |
-| **Total** | **40** | **35** | **5** | **0** |
+| **Cross-chain** | 2 | 2 | 0 | 0 |
+| **Total** | **45** | **40** | **5** | **0** |
 
 *INK-001 is "reduced" in the sense that reentrancy is denied by default, but the detector correctly flags explicit opt-in — so it's still valuable.
 
-**Overall: 35 of 40 detectors (88%) are fully relevant for 2024+. The remaining 5 have reduced but non-zero relevance.**
+**Overall: 40 of 45 detectors (89%) are fully relevant for 2024+. The remaining 5 have reduced but non-zero relevance.**
 
 ---
 
@@ -114,7 +119,7 @@
 
 Scan date: 2026-02-13
 Test corpus: Open-source, audited smart contract repositories
-Unit tests: 95 passed, 0 failed
+Unit tests: 110+ passed, 0 failed
 
 ### Test Corpus
 
@@ -265,24 +270,24 @@ No regressions: all 32 original detectors produce identical counts to the previo
 
 Based on 2024-2026 vulnerability research, the following emerging threat categories are **not covered** by RustDefend:
 
-| Gap | Chain | Priority | Description |
-|---|---|---|---|
-| Token-2022 extension safety | Solana | **High** | Programs accepting SPL tokens without checking for dangerous Token-2022 extensions (permanent delegate, transfer hooks, closeable mint). Actively exploited since Sep 2024. |
-| Unsafe `remaining_accounts` | Solana | **High** | `ctx.remaining_accounts` used without owner/type validation. #1 audit finding category (Sec3 2025 report). |
-| Supply chain risk indicators | All | **High** | Wildcard/unpinned dependency versions, typosquatting-risk crate names. Multiple real attacks in 2024-2025. |
-| `init_if_needed` reinitialization | Solana | **High** | Anchor `init_if_needed` without guard checks against reinitialization attacks. |
-| Unsafe IBC entry points | CosmWasm | **High** | IBC receive/ack/timeout handlers without packet validation. $150M at risk in 2024 IBC reentrancy bug. |
-| Unguarded `migrate` entry | CosmWasm | **Medium** | `migrate` handler without admin/sender check or version validation. |
-| Missing reply ID validation | CosmWasm | **Medium** | `reply` handler not matching on `msg.id`, processing all submessage replies identically. |
-| Unguarded storage unregister | NEAR | **Medium** | `storage_unregister` without checking non-zero token balances. |
-| Missing gas for callbacks | NEAR | **Medium** | Cross-contract calls without explicit gas specification. |
-| Unguarded `set_code_hash` | ink! | **Medium** | Upgradeable contracts using `set_code_hash` without admin verification. |
+| Gap | Chain | Priority | Description | Status |
+|---|---|---|---|---|
+| ~~Token-2022 extension safety~~ | Solana | **High** | Programs accepting SPL tokens without checking for dangerous Token-2022 extensions (permanent delegate, transfer hooks, closeable mint). | **Implemented: SOL-012** |
+| ~~Unsafe `remaining_accounts`~~ | Solana | **High** | `ctx.remaining_accounts` used without owner/type validation. #1 audit finding category (Sec3 2025 report). | **Implemented: SOL-013** |
+| ~~Supply chain risk indicators~~ | All | **High** | Wildcard/unpinned dependency versions, typosquatting-risk crate names. Multiple real attacks in 2024-2025. | **Implemented: DEP-002** |
+| ~~`init_if_needed` reinitialization~~ | Solana | **High** | Anchor `init_if_needed` without guard checks against reinitialization attacks. | **Implemented: SOL-014** |
+| ~~Unsafe IBC entry points~~ | CosmWasm | **High** | IBC receive/ack/timeout handlers without packet validation. $150M at risk in 2024 IBC reentrancy bug. | **Implemented: CW-008** |
+| Unguarded `migrate` entry | CosmWasm | **Medium** | `migrate` handler without admin/sender check or version validation. | Open |
+| Missing reply ID validation | CosmWasm | **Medium** | `reply` handler not matching on `msg.id`, processing all submessage replies identically. | Open |
+| Unguarded storage unregister | NEAR | **Medium** | `storage_unregister` without checking non-zero token balances. | Open |
+| Missing gas for callbacks | NEAR | **Medium** | Cross-contract calls without explicit gas specification. | Open |
+| Unguarded `set_code_hash` | ink! | **Medium** | Upgradeable contracts using `set_code_hash` without admin verification. | Open |
 
 ---
 
 ## Test Fixtures for Zero-Finding Detectors
 
-11 detectors had zero findings in the main test corpus because those repos are well-written. To verify these detectors work end-to-end (beyond unit tests), intentionally vulnerable fixtures are provided in `test-fixtures/`.
+16 detectors had zero findings in the main test corpus because those repos are well-written. To verify these detectors work end-to-end (beyond unit tests), intentionally vulnerable fixtures are provided in `test-fixtures/`.
 
 | Fixture | Detector | Findings |
 |---------|----------|----------|
@@ -297,6 +302,11 @@ Based on 2024-2026 vulnerability research, the following emerging threat categor
 | `ink/timestamp_compare.rs` | INK-004 | 3 |
 | `ink/unsafe_delegate.rs` | INK-009 | 2 |
 | `Cargo.toml` | DEP-001 | 6 |
+| `solana/token2022_unsafe.rs` | SOL-012 | 2 |
+| `solana/remaining_accounts_unsafe.rs` | SOL-013 | 2 |
+| `solana/init_if_needed_unsafe.rs` | SOL-014 | 2 |
+| `cosmwasm/unsafe_ibc.rs` | CW-008 | 3 |
+| `Cargo.toml` | DEP-002 | 3 |
 
 See `test-fixtures/README.md` for usage.
 

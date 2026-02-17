@@ -25,3 +25,13 @@ near-sdk = "3.1.0"
 
 # Vulnerable: < 4.0.0 (pre-reentrancy-default)
 ink = "3.4.0"
+
+# DEP-002: Supply chain risk indicators
+# Known malicious crate (typosquatting attack on rust_decimal)
+rustdecimal = "0.3.1"
+
+# Wildcard version — allows any version including malicious releases
+unsafe-wildcard = "*"
+
+# Unpinned git dependency — mutable branch reference
+unpinned-lib = { git = "https://github.com/example/unpinned-lib", branch = "main" }

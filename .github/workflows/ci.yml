@@ -43,8 +43,8 @@ jobs:
       - name: Verify detector count
         run: |
           COUNT=$(jq length docs/detectors/all_detectors.json)
-          if [ "$COUNT" -ne 40 ]; then
-            echo "Expected 40 detectors, found $COUNT"
+          if [ "$COUNT" -ne 45 ]; then
+            echo "Expected 45 detectors, found $COUNT"
             exit 1
           fi
           echo "Detector count verified: $COUNT"

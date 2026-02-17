@@ -6,6 +6,7 @@ mod reentrancy;
 mod storage_collision;
 mod unbounded_iteration;
 mod unchecked_response;
+mod unsafe_ibc;
 
 use super::Detector;
 
@@ -20,4 +21,5 @@ pub fn register(detectors: &mut Vec<Box<dyn Detector>>) {
     detectors.push(Box::new(
         missing_address_validation::MissingAddressValidationDetector,
     ));
+    detectors.push(Box::new(unsafe_ibc::UnsafeIbcDetector));
 }

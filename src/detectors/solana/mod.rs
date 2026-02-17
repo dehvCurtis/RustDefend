@@ -1,12 +1,15 @@
 mod account_confusion;
 mod arbitrary_cpi;
 mod cpi_reentrancy;
+mod init_if_needed;
 mod insecure_account_close;
 mod integer_overflow;
 mod missing_owner;
 mod missing_rent_exempt;
 mod missing_signer;
 mod pda_issues;
+mod remaining_accounts;
+mod token_extensions;
 mod unchecked_return;
 mod unsafe_pda_seeds;
 
@@ -26,4 +29,7 @@ pub fn register(detectors: &mut Vec<Box<dyn Detector>>) {
     detectors.push(Box::new(cpi_reentrancy::CpiReentrancyDetector));
     detectors.push(Box::new(unsafe_pda_seeds::UnsafePdaSeedsDetector));
     detectors.push(Box::new(missing_rent_exempt::MissingRentExemptDetector));
+    detectors.push(Box::new(token_extensions::TokenExtensionsDetector));
+    detectors.push(Box::new(remaining_accounts::RemainingAccountsDetector));
+    detectors.push(Box::new(init_if_needed::InitIfNeededDetector));
 }

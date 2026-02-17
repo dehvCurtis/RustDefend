@@ -1,6 +1,6 @@
 # Solana Detectors
 
-11 detectors for Solana smart contracts (native and Anchor).
+14 detectors for Solana smart contracts (native and Anchor).
 
 | ID | Name | Severity | Confidence |
 |----|------|----------|------------|
@@ -15,6 +15,9 @@
 | SOL-009 | CPI reentrancy (CEI violation) | Medium | Low |
 | SOL-010 | Unsafe PDA seeds | High | Medium |
 | SOL-011 | Missing rent exemption | Medium | Medium |
+| SOL-012 | Token-2022 extension safety | High | Medium |
+| SOL-013 | Unsafe remaining_accounts | High | Medium |
+| SOL-014 | init_if_needed reinitialization | High | Medium |
 
 ---
 
@@ -83,3 +86,25 @@
 - **Severity:** Medium | **Confidence:** Medium
 - Detects `create_account` calls without `Rent::get()` or `minimum_balance` checks.
 - Accounts without rent exemption can be garbage-collected.
+
+## SOL-012: token-2022-extension-safety
+
+- **Severity:** High | **Confidence:** Medium
+- Detects programs accepting SPL tokens via Token-2022 without checking for dangerous extensions (PermanentDelegate, TransferHook, MintCloseAuthority).
+- Trigger patterns: `spl_token_2022`, `Token2022`, `InterfaceAccount`, `token_interface`, `TokenInterface`, `transfer_checked`.
+- Skips files that implement a transfer hook themselves (`TransferHookExecute`).
+- Skips functions constrained to `spl_token::id()` (v1 only, no Token-2022).
+
+## SOL-013: unsafe-remaining-accounts
+
+- **Severity:** High | **Confidence:** Medium
+- Detects `ctx.remaining_accounts` used without owner/type/key validation in Anchor programs.
+- Safe patterns: `owner` check, `try_deserialize`, `Account::try_from`, `discriminator`, `key() ==`, `require_keys_eq!`.
+- Skips CPI passthrough (target program validates).
+
+## SOL-014: init-if-needed-reinitialization
+
+- **Severity:** High | **Confidence:** Medium
+- Detects Anchor `init_if_needed` constraint without guard checks against reinitialization.
+- Safe patterns: `is_initialized`, `AlreadyInitialized`, `constraint =` on same attribute.
+- Skips `TokenAccount`, `AssociatedTokenAccount`, `Mint` types (token program manages state).

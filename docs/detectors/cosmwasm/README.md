@@ -1,6 +1,6 @@
 # CosmWasm Detectors
 
-8 detectors for CosmWasm smart contracts.
+9 detectors for CosmWasm smart contracts.
 
 | ID | Name | Severity | Confidence |
 |----|------|----------|------------|
@@ -11,6 +11,7 @@
 | CW-005 | Unchecked query response | High | Low |
 | CW-006 | Improper error handling (panic in entry point) | High | High |
 | CW-007 | Unbounded iteration | High | Medium |
+| CW-008 | Unsafe IBC entry points | High | Medium |
 | CW-009 | Missing address validation (`Addr::unchecked`) | High | Medium |
 
 ---
@@ -54,6 +55,14 @@
 - **Severity:** High | **Confidence:** Medium
 - Detects `.range()` or `.iter()` without `.take()` in execute handlers.
 - Unbounded iteration can hit gas limits.
+
+## CW-008: unsafe-ibc-entry-points
+
+- **Severity:** High | **Confidence:** Medium
+- Detects IBC packet handlers (`ibc_packet_receive`, `ibc_packet_ack`, `ibc_packet_timeout`, `ibc_source_callback`, `ibc_destination_callback`) without channel validation or proper timeout rollback.
+- For receive/ack/callback handlers: checks for `channel_id` validation or `ALLOWED_CHANNEL`/`IBC_CHANNEL` constants.
+- For timeout handlers: checks for rollback logic (`refund`, `rollback`, `revert`) or storage mutations (`.save()`, `.update()`, `.remove()`).
+- Skips if `ibc_channel_open` in same file validates channels at connection time.
 
 ## CW-009: cosmwasm-missing-addr-validation
 

@@ -1,10 +1,11 @@
 # Cross-Chain Detectors
 
-1 cross-chain detector for dependency analysis.
+2 cross-chain detectors for dependency analysis.
 
 | ID | Name | Severity | Confidence |
 |----|------|----------|------------|
 | DEP-001 | Outdated dependencies with known CVEs | High | High |
+| DEP-002 | Supply chain risk indicators | High | High |
 
 ---
 
@@ -24,3 +25,29 @@
 | `solana-program` | < 1.16.0 | Runtime fixes |
 
 - Skips git and path dependencies (versions cannot be checked).
+
+## DEP-002: supply-chain-risk
+
+- **Severity:** High | **Confidence:** High
+- Detects supply chain risk indicators in `Cargo.toml`:
+
+### Wildcard Versions
+- Version `"*"` or partial wildcards like `"1.*"`
+- `">= 0"` or `"> 0"` (equivalent to wildcard)
+- Allows any version including potentially malicious releases
+
+### Unpinned Git Dependencies
+- Git dependencies without `rev =` or `tag =`
+- Mutable branch references can be silently replaced with malicious code
+- Medium confidence (Cargo.lock pins in practice)
+
+### Known Malicious Crate Names
+- Exact-match detection of known typosquatting/supply chain attack crates:
+  `rustdecimal`, `faster_log`, `async_println`, `finch-rust`, `finch-rst`, `sha-rust`, `sha-rst`, `finch_cli_rust`, `polymarket-clients-sdk`, `polymarket-client-sdks`
+- High confidence (exact match only)
+
+### False Positive Filters
+- Skips `path =` dependencies (local, not supply chain risk)
+- Skips `workspace = true` (inherited version)
+- Skips `[dev-dependencies]` for wildcard detection (crates.io allows wildcards there)
+- Git deps with `rev =` or `tag =` are considered pinned (safe)

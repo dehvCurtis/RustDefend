@@ -4,6 +4,19 @@ All notable changes to RustDefend will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.2.0] - 2026-02-16
+
+### Added
+
+- **5 new detectors** for actively exploited 2024+ vulnerability classes (45 total)
+  - SOL-012: Token-2022 extension safety — detects programs accepting Token-2022 tokens without checking for dangerous extensions (PermanentDelegate, TransferHook, MintCloseAuthority)
+  - SOL-013: Unsafe remaining_accounts — detects ctx.remaining_accounts usage without owner/type/key validation
+  - SOL-014: init_if_needed reinitialization — detects Anchor init_if_needed without guard checks
+  - CW-008: Unsafe IBC entry points — detects IBC packet handlers without channel validation or timeout rollback
+  - DEP-002: Supply chain risk indicators — detects wildcard versions, unpinned git deps, and known-malicious crate names
+- Test fixtures for all 5 new detectors
+- Known malicious crate name database (10 crates from 2024-2025 supply chain attacks)
+
 ## [0.1.0] - 2026-02-13
 
 ### Added
