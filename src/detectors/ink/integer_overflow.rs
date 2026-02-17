@@ -90,6 +90,7 @@ impl<'ast, 'a> Visit<'ast> for OverflowVisitor<'a> {
         if !snippet.contains("checked_") && !snippet.contains("saturating_") {
             self.findings.push(Finding {
                 detector_id: "INK-002".to_string(),
+                name: "ink-integer-overflow".to_string(),
                 severity: Severity::Low,
                 confidence: Confidence::Medium,
                 message: format!(

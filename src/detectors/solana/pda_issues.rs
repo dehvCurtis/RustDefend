@@ -64,6 +64,7 @@ impl<'ast, 'a> Visit<'ast> for PdaVisitor<'a> {
                 if has_bump_param {
                     self.findings.push(Finding {
                         detector_id: "SOL-007".to_string(),
+                        name: "pda-bump-misuse".to_string(),
                         severity: Severity::High,
                         confidence: Confidence::High,
                         message: format!(

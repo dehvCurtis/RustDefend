@@ -100,6 +100,7 @@ impl<'ast, 'a> Visit<'ast> for GasVisitor<'a> {
             let line = span_to_line(&func.sig.ident.span());
             self.findings.push(Finding {
                 detector_id: "NEAR-012".to_string(),
+                name: "missing-gas-for-callbacks".to_string(),
                 severity: Severity::Medium,
                 confidence: Confidence::Medium,
                 message: format!(

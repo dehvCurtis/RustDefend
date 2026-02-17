@@ -75,6 +75,7 @@ impl<'ast, 'a> Visit<'ast> for CloseVisitor<'a> {
             let line = span_to_line(&func.sig.ident.span());
             self.findings.push(Finding {
                 detector_id: "SOL-005".to_string(),
+                name: "insecure-account-close".to_string(),
                 severity: Severity::High,
                 confidence: Confidence::Medium,
                 message: format!(

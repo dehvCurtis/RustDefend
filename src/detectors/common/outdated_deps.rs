@@ -163,6 +163,7 @@ impl OutdatedDepsDetector {
 
                             findings.push(Finding {
                                 detector_id: "DEP-001".to_string(),
+                                name: "outdated-dependencies".to_string(),
                                 severity: Severity::High,
                                 confidence: Confidence::High,
                                 message: format!(
@@ -212,6 +213,7 @@ impl OutdatedDepsDetector {
                             let line = find_dep_line(&content, range.crate_name);
                             findings.push(Finding {
                                 detector_id: "DEP-001".to_string(),
+                                name: "outdated-dependencies".to_string(),
                                 severity: Severity::High,
                                 confidence: Confidence::High,
                                 message: format!(

@@ -80,6 +80,7 @@ impl<'ast, 'a> Visit<'ast> for ErrorVisitor<'a> {
                         let line = span_to_line(&local.let_token.span);
                         self.findings.push(Finding {
                             detector_id: "INK-008".to_string(),
+                            name: "ink-result-suppression".to_string(),
                             severity: Severity::Medium,
                             confidence: Confidence::Medium,
                             message: format!(

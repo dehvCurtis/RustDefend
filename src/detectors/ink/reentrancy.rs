@@ -32,6 +32,7 @@ impl Detector for ReentrancyDetector {
                 let line_num = line_idx + 1;
                 findings.push(Finding {
                     detector_id: "INK-001".to_string(),
+                    name: "ink-reentrancy".to_string(),
                     severity: Severity::Critical,
                     confidence: Confidence::High,
                     message: "set_allow_reentry(true) enables reentrancy attacks".to_string(),

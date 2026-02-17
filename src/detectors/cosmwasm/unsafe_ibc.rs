@@ -126,6 +126,7 @@ impl<'ast, 'a> Visit<'ast> for IbcVisitor<'a> {
                 let line = span_to_line(&func.sig.ident.span());
                 self.findings.push(Finding {
                     detector_id: "CW-008".to_string(),
+                    name: "unsafe-ibc-entry-points".to_string(),
                     severity: Severity::High,
                     confidence: Confidence::Medium,
                     message: format!(
@@ -153,6 +154,7 @@ impl<'ast, 'a> Visit<'ast> for IbcVisitor<'a> {
                 let line = span_to_line(&func.sig.ident.span());
                 self.findings.push(Finding {
                     detector_id: "CW-008".to_string(),
+                    name: "unsafe-ibc-entry-points".to_string(),
                     severity: Severity::High,
                     confidence: Confidence::Medium,
                     message: format!(

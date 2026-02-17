@@ -114,6 +114,7 @@ impl<'ast, 'a> Visit<'ast> for CpiVisitor<'a> {
             let line = span_to_line(&func.sig.ident.span());
             self.findings.push(Finding {
                 detector_id: "SOL-006".to_string(),
+                name: "arbitrary-cpi".to_string(),
                 severity: Severity::Critical,
                 confidence: Confidence::Medium,
                 message: format!(

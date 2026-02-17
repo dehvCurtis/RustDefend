@@ -75,6 +75,7 @@ impl<'ast, 'a> Visit<'ast> for FrontrunVisitor<'a> {
             let line = span_to_line(&func.sig.ident.span());
             self.findings.push(Finding {
                 detector_id: "NEAR-008".to_string(),
+                name: "frontrunning-risk".to_string(),
                 severity: Severity::High,
                 confidence: Confidence::Low,
                 message: format!(

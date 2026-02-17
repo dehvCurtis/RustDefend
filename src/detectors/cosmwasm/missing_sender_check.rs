@@ -81,6 +81,7 @@ impl<'ast, 'a> Visit<'ast> for SenderVisitor<'a> {
             let line = span_to_line(&func.sig.ident.span());
             self.findings.push(Finding {
                 detector_id: "CW-003".to_string(),
+                name: "missing-sender-check".to_string(),
                 severity: Severity::Critical,
                 confidence: Confidence::Medium,
                 message: format!(

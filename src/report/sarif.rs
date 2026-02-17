@@ -17,7 +17,11 @@ impl Reporter for SarifReporter {
                 let finding = findings.iter().find(|f| &f.detector_id == id).unwrap();
                 json!({
                     "id": id,
+                    "name": finding.name,
                     "shortDescription": {
+                        "text": finding.name
+                    },
+                    "fullDescription": {
                         "text": finding.message
                     },
                     "defaultConfiguration": {

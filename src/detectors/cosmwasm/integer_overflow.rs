@@ -20,10 +20,10 @@ impl Detector for IntegerOverflowDetector {
         "Detects unchecked arithmetic on Uint128/Uint256 types (panics safely but checked_* enables graceful handling)"
     }
     fn severity(&self) -> Severity {
-        Severity::Medium
+        Severity::Low
     }
     fn confidence(&self) -> Confidence {
-        Confidence::Medium
+        Confidence::Low
     }
     fn chain(&self) -> Chain {
         Chain::CosmWasm
@@ -49,6 +49,21 @@ struct OverflowVisitor<'a> {
 
 impl<'ast, 'a> Visit<'ast> for OverflowVisitor<'a> {
     fn visit_item_fn(&mut self, func: &'ast ItemFn) {
+        let fn_name = func.sig.ident.to_string();
+
+        // Skip test/mock/helper functions
+        if fn_name.starts_with("test_")
+            || fn_name.ends_with("_test")
+            || fn_name.contains("_works")
+            || fn_name.contains("_mock")
+            || fn_name.starts_with("mock_")
+            || fn_name.starts_with("setup")
+            || fn_name.starts_with("helper")
+            || has_attribute(&func.attrs, "test")
+        {
+            return;
+        }
+
         let fn_src = func.to_token_stream().to_string();
         // Check if function signature involves Uint128/Uint256 types
         let involves_uint = fn_src.contains("Uint128")
@@ -90,8 +105,9 @@ impl<'ast, 'a> Visit<'ast> for OverflowVisitor<'a> {
             let expr_str = expr.to_token_stream().to_string();
             self.findings.push(Finding {
                 detector_id: "CW-001".to_string(),
-                severity: Severity::Medium,
-                confidence: Confidence::Medium,
+                name: "cosmwasm-integer-overflow".to_string(),
+                severity: Severity::Low,
+                confidence: Confidence::Low,
                 message: format!(
                     "Unchecked arithmetic on Uint128/Uint256: {}",
                     expr_str

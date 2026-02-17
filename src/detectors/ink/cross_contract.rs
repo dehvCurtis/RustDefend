@@ -53,6 +53,7 @@ impl Detector for CrossContractDetector {
                 if (!is_handled && !next_line_handled) || is_discarded {
                     findings.push(Finding {
                         detector_id: "INK-006".to_string(),
+                        name: "ink-cross-contract".to_string(),
                         severity: Severity::High,
                         confidence: Confidence::High,
                         message: "try_invoke() result is not checked".to_string(),

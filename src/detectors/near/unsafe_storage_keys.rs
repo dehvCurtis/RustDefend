@@ -77,6 +77,7 @@ impl<'ast, 'a> Visit<'ast> for StorageKeyVisitor<'a> {
         let line = span_to_line(&func.sig.ident.span());
         self.findings.push(Finding {
             detector_id: "NEAR-009".to_string(),
+            name: "unsafe-storage-keys".to_string(),
             severity: Severity::Medium,
             confidence: Confidence::Medium,
             message: format!(

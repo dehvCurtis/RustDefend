@@ -83,6 +83,7 @@ impl<'ast, 'a> Visit<'ast> for ReentrancyVisitor<'a> {
                 let line = span_to_line(&func.sig.ident.span());
                 self.findings.push(Finding {
                     detector_id: "NEAR-001".to_string(),
+                    name: "promise-reentrancy".to_string(),
                     severity: Severity::Critical,
                     confidence: Confidence::Medium,
                     message: format!(

@@ -80,6 +80,7 @@ impl<'ast, 'a> Visit<'ast> for PanicVisitor<'a> {
             let line = span_to_line(&call.method.span());
             self.findings.push(Finding {
                 detector_id: "INK-007".to_string(),
+                name: "ink-panic-usage".to_string(),
                 severity: Severity::High,
                 confidence: Confidence::High,
                 message: format!(
@@ -113,6 +114,7 @@ impl<'ast, 'a> Visit<'ast> for PanicVisitor<'a> {
                 let line = span_to_line(&seg.ident.span());
                 self.findings.push(Finding {
                     detector_id: "INK-007".to_string(),
+                    name: "ink-panic-usage".to_string(),
                     severity: Severity::High,
                     confidence: Confidence::High,
                     message: format!(

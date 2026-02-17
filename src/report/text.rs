@@ -52,12 +52,25 @@ impl Reporter for TextReporter {
             output.push_str(&colored_header);
 
             for f in group {
+                let title = f.name.replace('-', " ");
+                let title = title
+                    .split_whitespace()
+                    .map(|w| {
+                        let mut c = w.chars();
+                        match c.next() {
+                            None => String::new(),
+                            Some(first) => first.to_uppercase().to_string() + c.as_str(),
+                        }
+                    })
+                    .collect::<Vec<_>>()
+                    .join(" ");
                 output.push_str(&format!(
                     "\n  [{}] {} ({})\n",
                     f.detector_id.bold(),
-                    f.message,
+                    title.bold(),
                     f.chain
                 ));
+                output.push_str(&format!("  {}\n", f.message));
                 output.push_str(&format!(
                     "  {} {}:{}\n",
                     "-->".dimmed(),

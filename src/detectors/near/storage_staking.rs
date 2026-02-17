@@ -64,6 +64,7 @@ impl<'ast, 'a> Visit<'ast> for StorageVisitor<'a> {
             let line = span_to_line(&func.sig.ident.span());
             self.findings.push(Finding {
                 detector_id: "NEAR-003".to_string(),
+                name: "storage-staking-auth".to_string(),
                 severity: Severity::High,
                 confidence: Confidence::Medium,
                 message: format!(

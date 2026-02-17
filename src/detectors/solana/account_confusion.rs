@@ -99,6 +99,7 @@ impl<'ast, 'a> Visit<'ast> for ConfusionVisitor<'a> {
             let line = span_to_line(&func.sig.ident.span());
             self.findings.push(Finding {
                 detector_id: "SOL-004".to_string(),
+                name: "account-confusion".to_string(),
                 severity: Severity::High,
                 confidence: Confidence::Medium,
                 message: format!(

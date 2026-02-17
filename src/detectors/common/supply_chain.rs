@@ -96,6 +96,7 @@ impl SupplyChainDetector {
             if KNOWN_MALICIOUS_CRATES.contains(&name.as_str()) {
                 findings.push(Finding {
                     detector_id: "DEP-002".to_string(),
+                    name: "supply-chain-risk".to_string(),
                     severity: Severity::High,
                     confidence: Confidence::High,
                     message: format!(
@@ -140,6 +141,7 @@ impl SupplyChainDetector {
                         if !has_rev && !has_tag {
                             findings.push(Finding {
                                 detector_id: "DEP-002".to_string(),
+                                name: "supply-chain-risk".to_string(),
                                 severity: Severity::High,
                                 confidence: Confidence::Medium,
                                 message: format!(
@@ -203,6 +205,7 @@ impl SupplyChainDetector {
         if is_wildcard {
             findings.push(Finding {
                 detector_id: "DEP-002".to_string(),
+                name: "supply-chain-risk".to_string(),
                 severity: Severity::High,
                 confidence: Confidence::High,
                 message: format!(

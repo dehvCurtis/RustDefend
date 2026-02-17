@@ -72,6 +72,7 @@ impl<'ast, 'a> Visit<'ast> for DelegateVisitor<'a> {
             let line = span_to_line(&method.sig.ident.span());
             self.findings.push(Finding {
                 detector_id: "INK-009".to_string(),
+                name: "ink-unsafe-delegate-call".to_string(),
                 severity: Severity::Critical,
                 confidence: Confidence::High,
                 message: format!(

@@ -66,6 +66,7 @@ impl<'ast, 'a> Visit<'ast> for StorageVisitor<'a> {
                     let line = span_to_line(&method.sig.ident.span());
                     self.findings.push(Finding {
                         detector_id: "INK-005".to_string(),
+                        name: "ink-unbounded-storage".to_string(),
                         severity: Severity::Medium,
                         confidence: Confidence::Medium,
                         message: format!(
@@ -103,6 +104,7 @@ impl<'ast, 'a> Visit<'ast> for StorageVisitor<'a> {
                     let line = span_to_line(&method.sig.ident.span());
                     self.findings.push(Finding {
                         detector_id: "INK-005".to_string(),
+                        name: "ink-unbounded-storage".to_string(),
                         severity: Severity::Medium,
                         confidence: Confidence::Medium,
                         message: format!(

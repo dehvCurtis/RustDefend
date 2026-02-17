@@ -56,6 +56,7 @@ impl<'ast, 'a> Visit<'ast> for ReturnVisitor<'a> {
                         let line = span_to_line(&local.pat.span());
                         self.findings.push(Finding {
                             detector_id: "SOL-008".to_string(),
+                            name: "unchecked-cpi-return".to_string(),
                             severity: Severity::High,
                             confidence: Confidence::High,
                             message: "CPI call result is discarded with `let _ = ...`".to_string(),
@@ -87,6 +88,7 @@ impl<'ast, 'a> Visit<'ast> for ReturnVisitor<'a> {
                 let line = span_to_line(&expr.span());
                 self.findings.push(Finding {
                     detector_id: "SOL-008".to_string(),
+                    name: "unchecked-cpi-return".to_string(),
                     severity: Severity::High,
                     confidence: Confidence::High,
                     message: "CPI call result is ignored".to_string(),

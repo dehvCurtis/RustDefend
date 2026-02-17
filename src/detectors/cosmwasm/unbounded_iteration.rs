@@ -70,6 +70,7 @@ impl<'ast, 'a> Visit<'ast> for IterVisitor<'a> {
                 let line = span_to_line(&func.sig.ident.span());
                 self.findings.push(Finding {
                     detector_id: "CW-007".to_string(),
+                    name: "unbounded-iteration".to_string(),
                     severity: Severity::High,
                     confidence: Confidence::Medium,
                     message: format!(

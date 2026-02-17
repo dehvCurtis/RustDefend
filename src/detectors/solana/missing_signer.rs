@@ -47,6 +47,39 @@ struct SignerVisitor<'a> {
 
 impl<'ast, 'a> Visit<'ast> for SignerVisitor<'a> {
     fn visit_item_fn(&mut self, func: &'ast ItemFn) {
+        let fn_name = func.sig.ident.to_string();
+
+        // Skip test functions
+        if fn_name.starts_with("test_") || has_attribute(&func.attrs, "test") {
+            return;
+        }
+
+        // Skip internal helper functions — signer check typically at caller level
+        if fn_name.starts_with('_')
+            || fn_name.starts_with("inner_")
+            || fn_name.starts_with("do_")
+            || fn_name.starts_with("impl_")
+            || fn_name.starts_with("handle_")
+        {
+            return;
+        }
+
+        // Skip utility/library functions that aren't entry points
+        let fn_lower = fn_name.to_lowercase();
+        if fn_lower.contains("serialize")
+            || fn_lower.contains("deserialize")
+            || fn_lower.contains("pack")
+            || fn_lower.contains("unpack")
+            || fn_lower.contains("parse")
+            || fn_lower.contains("validate")
+            || fn_lower.contains("verify")
+            || fn_lower.contains("check")
+            || fn_lower.contains("from_account")
+            || fn_lower.contains("to_account")
+        {
+            return;
+        }
+
         let body_src = fn_body_source(func);
 
         // Skip if this uses Anchor's Signer<'info> or Account<'info, T> patterns
@@ -73,7 +106,7 @@ impl<'ast, 'a> Visit<'ast> for SignerVisitor<'a> {
                     // Get the parameter name
                     let param_name = pat_type.pat.to_token_stream().to_string();
 
-                    // Skip common non-signer parameter names (iterators, program ids)
+                    // Skip common non-signer parameter names (iterators, program ids, sysvars)
                     let param_lower = param_name.to_lowercase();
                     if param_lower.contains("program")
                         || param_lower.contains("system")
@@ -83,6 +116,15 @@ impl<'ast, 'a> Visit<'ast> for SignerVisitor<'a> {
                         || param_lower.contains("mint")
                         || param_lower.contains("metadata")
                         || param_lower.contains("associated")
+                        || param_lower.contains("sysvar")
+                        || param_lower.contains("pda")
+                        || param_lower.contains("vault")
+                        || param_lower.contains("pool")
+                        || param_lower.contains("config")
+                        || param_lower.contains("state")
+                        || param_lower.contains("data")
+                        || param_lower.contains("dest")
+                        || param_lower.contains("source")
                     {
                         continue;
                     }
@@ -121,6 +163,7 @@ impl<'ast, 'a> Visit<'ast> for SignerVisitor<'a> {
             };
             self.findings.push(Finding {
                 detector_id: "SOL-001".to_string(),
+                name: "missing-signer-check".to_string(),
                 severity: Severity::Critical,
                 confidence: Confidence::High,
                 message: format!(
@@ -213,6 +256,36 @@ mod tests {
         assert!(
             findings.is_empty(),
             "Should not flag Anchor Context pattern"
+        );
+    }
+
+    #[test]
+    fn test_no_finding_internal_helper() {
+        let source = r#"
+            fn _transfer_tokens(account: &AccountInfo, dest: &AccountInfo) {
+                let mut data = account.try_borrow_mut_data().unwrap();
+                data.serialize(&mut *dest.try_borrow_mut_data().unwrap()).unwrap();
+            }
+        "#;
+        let findings = run_detector(source);
+        assert!(
+            findings.is_empty(),
+            "Should not flag internal helper functions (prefixed with _)"
+        );
+    }
+
+    #[test]
+    fn test_no_finding_utility_function() {
+        let source = r#"
+            fn validate_account(account: &AccountInfo) {
+                let data = account.try_borrow_mut_data().unwrap();
+                data.serialize(&mut buf).unwrap();
+            }
+        "#;
+        let findings = run_detector(source);
+        assert!(
+            findings.is_empty(),
+            "Should not flag validate/verify/check utility functions"
         );
     }
 }

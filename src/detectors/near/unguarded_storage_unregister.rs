@@ -83,6 +83,7 @@ impl<'ast, 'a> Visit<'ast> for StorageUnregisterVisitor<'a> {
             let line = span_to_line(&func.sig.ident.span());
             self.findings.push(Finding {
                 detector_id: "NEAR-011".to_string(),
+                name: "unguarded-storage-unregister".to_string(),
                 severity: Severity::Medium,
                 confidence: Confidence::Medium,
                 message: format!(

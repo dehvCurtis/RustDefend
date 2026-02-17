@@ -114,6 +114,7 @@ impl<'ast, 'a> Visit<'ast> for TokenExtVisitor<'a> {
         let line = span_to_line(&func.sig.ident.span());
         self.findings.push(Finding {
             detector_id: "SOL-012".to_string(),
+            name: "token-2022-extension-safety".to_string(),
             severity: Severity::High,
             confidence: Confidence::Medium,
             message: format!(

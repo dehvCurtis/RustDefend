@@ -78,6 +78,7 @@ impl<'ast, 'a> Visit<'ast> for OverflowVisitor<'a> {
                 let line = span_to_line(&call.method.span());
                 self.findings.push(Finding {
                     detector_id: "NEAR-005".to_string(),
+                    name: "near-wrapping-arithmetic".to_string(),
                     severity: Severity::Critical,
                     confidence: Confidence::Medium,
                     message: format!(

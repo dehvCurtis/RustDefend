@@ -74,6 +74,20 @@ impl<'ast, 'a> Visit<'ast> for ReentrancyVisitor<'a> {
             return;
         }
 
+        // CosmWasm is non-reentrant by design. Only flag if IBC hooks are involved
+        // (CWA-2024-007 reentrancy via ibc-hooks) or if it's a reply/submessage handler.
+        let is_ibc_relevant = fn_name.contains("ibc")
+            || body_src.contains("IbcMsg")
+            || body_src.contains("ibc")
+            || fn_name.starts_with("reply")
+            || fn_name.contains("reply")
+            || body_src.contains("SubMsg")
+            || body_src.contains("ReplyOn");
+
+        if !is_ibc_relevant {
+            return;
+        }
+
         // Check ordering: save before add_message
         let stmts = &func.block.stmts;
         let mut seen_save = false;
@@ -93,6 +107,7 @@ impl<'ast, 'a> Visit<'ast> for ReentrancyVisitor<'a> {
                 let line = span_to_line(&func.sig.ident.span());
                 self.findings.push(Finding {
                     detector_id: "CW-002".to_string(),
+                    name: "cosmwasm-reentrancy".to_string(),
                     severity: Severity::Low,
                     confidence: Confidence::Low,
                     message: format!(
@@ -128,7 +143,22 @@ mod tests {
     }
 
     #[test]
-    fn test_detects_save_before_message() {
+    fn test_detects_save_before_message_in_ibc() {
+        let source = r#"
+            fn ibc_packet_receive(deps: DepsMut, msg: IbcPacketReceiveMsg) -> StdResult<Response> {
+                STATE.save(deps.storage, &new_state)?;
+                Ok(Response::new().add_message(WasmMsg::Execute { .. }))
+            }
+        "#;
+        let findings = run_detector(source);
+        assert!(
+            !findings.is_empty(),
+            "Should detect save before add_message in IBC handler"
+        );
+    }
+
+    #[test]
+    fn test_no_finding_non_ibc_handler() {
         let source = r#"
             fn execute_transfer(deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
                 STATE.save(deps.storage, &new_state)?;
@@ -137,8 +167,8 @@ mod tests {
         "#;
         let findings = run_detector(source);
         assert!(
-            !findings.is_empty(),
-            "Should detect save before add_message"
+            findings.is_empty(),
+            "Should not flag non-IBC handler (CosmWasm is non-reentrant by design)"
         );
     }
 }

@@ -74,6 +74,7 @@ impl<'ast, 'a> Visit<'ast> for RentVisitor<'a> {
         let line = span_to_line(&func.sig.ident.span());
         self.findings.push(Finding {
             detector_id: "SOL-011".to_string(),
+            name: "missing-rent-exempt".to_string(),
             severity: Severity::Medium,
             confidence: Confidence::Medium,
             message: format!(

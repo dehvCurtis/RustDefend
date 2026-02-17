@@ -43,6 +43,7 @@ impl Detector for TimestampDependenceDetector {
                     let line_num = line_idx + 1;
                     findings.push(Finding {
                         detector_id: "INK-004".to_string(),
+                        name: "ink-timestamp-dependence".to_string(),
                         severity: Severity::Medium,
                         confidence: Confidence::Medium,
                         message: "block_timestamp() used in decision logic - can be manipulated by validators".to_string(),

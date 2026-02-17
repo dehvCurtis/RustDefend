@@ -87,6 +87,7 @@ impl<'ast, 'a> Visit<'ast> for ErrorVisitor<'a> {
             let line = span_to_line(&call.method.span());
             self.findings.push(Finding {
                 detector_id: "CW-006".to_string(),
+                name: "improper-error-handling".to_string(),
                 severity: Severity::High,
                 confidence: Confidence::High,
                 message: format!(
@@ -119,6 +120,7 @@ impl<'ast, 'a> Visit<'ast> for ErrorVisitor<'a> {
             let line = span_to_line(&mac.path.segments.first().unwrap().ident.span());
             self.findings.push(Finding {
                 detector_id: "CW-006".to_string(),
+                name: "improper-error-handling".to_string(),
                 severity: Severity::High,
                 confidence: Confidence::High,
                 message: format!(

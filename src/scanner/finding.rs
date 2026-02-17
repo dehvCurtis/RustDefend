@@ -98,6 +98,7 @@ impl Confidence {
 #[derive(Debug, Clone, Serialize)]
 pub struct Finding {
     pub detector_id: String,
+    pub name: String,
     pub severity: Severity,
     pub confidence: Confidence,
     pub message: String,

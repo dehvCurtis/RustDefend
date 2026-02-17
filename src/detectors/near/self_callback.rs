@@ -73,6 +73,7 @@ impl<'ast, 'a> Visit<'ast> for SelfCallbackVisitor<'a> {
             let line = span_to_line(&func.sig.ident.span());
             self.findings.push(Finding {
                 detector_id: "NEAR-007".to_string(),
+                name: "self-callback-state".to_string(),
                 severity: Severity::High,
                 confidence: Confidence::Medium,
                 message: format!(

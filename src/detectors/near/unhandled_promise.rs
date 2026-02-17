@@ -56,6 +56,7 @@ impl Detector for UnhandledPromiseDetector {
                 let line_num = line_idx + 1;
                 findings.push(Finding {
                     detector_id: "NEAR-004".to_string(),
+                    name: "callback-unwrap-usage".to_string(),
                     severity: Severity::High,
                     confidence: Confidence::High,
                     message: "#[callback_unwrap] will panic on failed promise - use #[callback_result] instead".to_string(),

@@ -75,6 +75,7 @@ impl<'ast, 'a> Visit<'ast> for DepositVisitor<'a> {
         let line = span_to_line(&method.sig.ident.span());
         self.findings.push(Finding {
             detector_id: "NEAR-010".to_string(),
+            name: "missing-deposit-check".to_string(),
             severity: Severity::High,
             confidence: Confidence::High,
             message: format!(

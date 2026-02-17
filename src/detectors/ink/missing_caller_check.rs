@@ -70,6 +70,34 @@ impl<'ast, 'a> Visit<'ast> for CallerVisitor<'a> {
             return;
         }
 
+        let method_name = method.sig.ident.to_string();
+        let name_lower = method_name.to_lowercase();
+
+        // Skip known permissionless patterns — standard interface methods and trivial operations
+        if name_lower == "flip"
+            || name_lower == "inc"
+            || name_lower == "increment"
+            || name_lower == "decrement"
+            || name_lower == "vote"
+            || name_lower == "register"
+            || name_lower == "new"
+            || name_lower.starts_with("get_")
+            || name_lower.starts_with("is_")
+            || name_lower.starts_with("has_")
+        {
+            return;
+        }
+
+        // Skip PSP22/PSP34 (ERC-20/721 equivalent) standard interface methods
+        if name_lower == "transfer"
+            || name_lower == "transfer_from"
+            || name_lower == "approve"
+            || name_lower == "increase_allowance"
+            || name_lower == "decrease_allowance"
+        {
+            return;
+        }
+
         let body_src = method.block.to_token_stream().to_string();
 
         // Check for actual storage mutation patterns:
@@ -99,8 +127,6 @@ impl<'ast, 'a> Visit<'ast> for CallerVisitor<'a> {
         if has_caller_check {
             return;
         }
-
-        let method_name = method.sig.ident.to_string();
 
         // Determine risk level based on what's being written and method context
         let has_value_transfer = body_src.contains("transfer (")
@@ -153,6 +179,7 @@ impl<'ast, 'a> Visit<'ast> for CallerVisitor<'a> {
         let line = span_to_line(&method.sig.ident.span());
         self.findings.push(Finding {
             detector_id: "INK-003".to_string(),
+            name: "ink-missing-caller-check".to_string(),
             severity,
             confidence,
             message: format!(
@@ -341,5 +368,39 @@ mod tests {
         let findings = run_detector(source);
         assert!(!findings.is_empty());
         assert_eq!(findings[0].confidence, Confidence::Low);
+    }
+
+    #[test]
+    fn test_no_finding_for_flip() {
+        let source = r#"
+            impl Flipper {
+                #[ink(message)]
+                pub fn flip(&mut self) {
+                    self.value = !self.value;
+                }
+            }
+        "#;
+        let findings = run_detector(source);
+        assert!(
+            findings.is_empty(),
+            "Should not flag known permissionless patterns like flip"
+        );
+    }
+
+    #[test]
+    fn test_no_finding_for_standard_transfer() {
+        let source = r#"
+            impl Erc20 {
+                #[ink(message)]
+                pub fn transfer(&mut self, to: AccountId, value: Balance) {
+                    self.balances = value;
+                }
+            }
+        "#;
+        let findings = run_detector(source);
+        assert!(
+            findings.is_empty(),
+            "Should not flag PSP22/ERC20 standard transfer method"
+        );
     }
 }

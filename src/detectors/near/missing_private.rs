@@ -71,6 +71,7 @@ impl<'ast, 'a> Visit<'ast> for PrivateVisitor<'a> {
             let line = span_to_line(&method.sig.ident.span());
             self.findings.push(Finding {
                 detector_id: "NEAR-006".to_string(),
+                name: "missing-private-callback".to_string(),
                 severity: Severity::Critical,
                 confidence: Confidence::High,
                 message: format!(

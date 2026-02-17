@@ -195,6 +195,7 @@ impl<'ast, 'a> Visit<'ast> for OverflowVisitor<'a> {
 
         self.findings.push(Finding {
             detector_id: "SOL-003".to_string(),
+            name: "integer-overflow".to_string(),
             severity: Severity::Critical,
             confidence,
             message: format!(

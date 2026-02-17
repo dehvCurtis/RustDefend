@@ -109,6 +109,7 @@ impl<'ast, 'a> Visit<'ast> for SignerVisitor<'a> {
 
             self.findings.push(Finding {
                 detector_id: "NEAR-002".to_string(),
+                name: "signer-vs-predecessor".to_string(),
                 severity: Severity::High,
                 confidence: Confidence::High,
                 message: format!(

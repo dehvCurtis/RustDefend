@@ -46,6 +46,7 @@ impl Detector for StorageCollisionDetector {
                 for &line in &lines[1..] {
                     findings.push(Finding {
                         detector_id: "CW-004".to_string(),
+                        name: "storage-collision".to_string(),
                         severity: Severity::High,
                         confidence: Confidence::High,
                         message: format!(

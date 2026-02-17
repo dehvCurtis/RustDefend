@@ -86,6 +86,7 @@ impl<'ast, 'a> Visit<'ast> for ReplyVisitor<'a> {
             let line = span_to_line(&func.sig.ident.span());
             self.findings.push(Finding {
                 detector_id: "CW-011".to_string(),
+                name: "missing-reply-id-validation".to_string(),
                 severity: Severity::Medium,
                 confidence: Confidence::Medium,
                 message: format!(

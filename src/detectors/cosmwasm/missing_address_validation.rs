@@ -49,13 +49,39 @@ impl<'ast, 'a> Visit<'ast> for AddrVisitor<'a> {
     fn visit_item_fn(&mut self, func: &'ast ItemFn) {
         let fn_name = func.sig.ident.to_string();
 
-        // Skip test functions
+        // Skip test functions and mock/helper/setup functions
         if fn_name.starts_with("test_")
             || fn_name.ends_with("_test")
             || fn_name.contains("_works")
             || fn_name.contains("_mock")
             || fn_name.contains("_should")
+            || fn_name.starts_with("mock_")
+            || fn_name.starts_with("setup")
+            || fn_name.starts_with("fixture")
+            || fn_name.starts_with("helper")
+            || fn_name.starts_with("create_test")
+            || fn_name.starts_with("make_test")
+            || fn_name.starts_with("default_")
+            || fn_name.starts_with("new_test")
+            || fn_name.starts_with("instantiate_test")
+            || fn_name.contains("mock_deps")
+            || fn_name.contains("mock_env")
+            || fn_name.contains("mock_info")
             || has_attribute(&func.attrs, "test")
+        {
+            return;
+        }
+
+        // Skip if file path suggests test/mock code
+        let file_str = self.ctx.file_path.to_string_lossy();
+        if file_str.contains("/testing")
+            || file_str.contains("/mock")
+            || file_str.contains("/helpers")
+            || file_str.contains("/testutils")
+            || file_str.contains("_mock.rs")
+            || file_str.contains("_helpers.rs")
+            || file_str.contains("test_utils")
+            || file_str.contains("testing.rs")
         {
             return;
         }
@@ -79,6 +105,7 @@ impl<'ast, 'a> Visit<'ast> for AddrVisitor<'a> {
         let line = span_to_line(&func.sig.ident.span());
         self.findings.push(Finding {
             detector_id: "CW-009".to_string(),
+            name: "cosmwasm-missing-addr-validation".to_string(),
             severity: Severity::High,
             confidence: Confidence::Medium,
             message: format!(
@@ -147,5 +174,29 @@ mod tests {
         "#;
         let findings = run_detector(source);
         assert!(findings.is_empty(), "Should not flag in test functions");
+    }
+
+    #[test]
+    fn test_no_finding_in_mock_function() {
+        let source = r#"
+            fn mock_deps() -> OwnedDeps<MockStorage> {
+                let addr = Addr::unchecked("contract_addr");
+                mock_dependencies()
+            }
+        "#;
+        let findings = run_detector(source);
+        assert!(findings.is_empty(), "Should not flag mock/helper functions");
+    }
+
+    #[test]
+    fn test_no_finding_in_setup_function() {
+        let source = r#"
+            fn setup_contract(deps: DepsMut) {
+                let addr = Addr::unchecked("admin");
+                CONFIG.save(deps.storage, &addr).unwrap();
+            }
+        "#;
+        let findings = run_detector(source);
+        assert!(findings.is_empty(), "Should not flag setup functions");
     }
 }

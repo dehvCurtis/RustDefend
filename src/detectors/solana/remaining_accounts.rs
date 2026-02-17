@@ -106,6 +106,7 @@ impl<'ast, 'a> Visit<'ast> for RemainingAccountsVisitor<'a> {
         let line = span_to_line(&func.sig.ident.span());
         self.findings.push(Finding {
             detector_id: "SOL-013".to_string(),
+            name: "unsafe-remaining-accounts".to_string(),
             severity: Severity::High,
             confidence: Confidence::Medium,
             message: format!(

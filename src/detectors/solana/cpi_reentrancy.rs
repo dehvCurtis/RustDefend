@@ -76,6 +76,7 @@ impl<'ast, 'a> Visit<'ast> for ReentrancyVisitor<'a> {
                 if is_mutation && stmt_line > cpi_line {
                     self.findings.push(Finding {
                         detector_id: "SOL-009".to_string(),
+                        name: "cpi-reentrancy".to_string(),
                         severity: Severity::Medium,
                         confidence: Confidence::Low,
                         message: format!(

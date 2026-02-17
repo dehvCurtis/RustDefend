@@ -3,16 +3,16 @@
 
 use solana_program::pubkey::Pubkey;
 
-fn get_global_config_pda(program_id: &Pubkey) -> (Pubkey, u8) {
+fn get_escrow_pda(program_id: &Pubkey) -> (Pubkey, u8) {
     Pubkey::find_program_address(
-        &[b"config"],
+        &[b"escrow"],
         program_id,
     )
 }
 
-fn get_vault_pda(program_id: &Pubkey) -> (Pubkey, u8) {
+fn get_reward_pool_pda(program_id: &Pubkey) -> (Pubkey, u8) {
     Pubkey::find_program_address(
-        &[b"vault", b"main"],
+        &[b"reward_pool", b"main"],
         program_id,
     )
 }

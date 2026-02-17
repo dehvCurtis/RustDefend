@@ -51,6 +51,28 @@ impl<'ast, 'a> Visit<'ast> for PdaVisitor<'a> {
             return;
         }
 
+        // Skip Anchor codegen/macro infrastructure functions
+        let fn_lower = fn_name.to_lowercase();
+        if fn_lower.contains("constraint")
+            || fn_lower.contains("__anchor")
+            || fn_lower.starts_with("_")
+            || fn_lower.contains("seeds_with_nonce")
+            || fn_lower.contains("create_with_seed")
+        {
+            return;
+        }
+
+        // Skip if file path suggests Anchor codegen
+        let file_str = self.ctx.file_path.to_string_lossy();
+        if file_str.contains("/generated/")
+            || file_str.contains("/codegen/")
+            || file_str.contains("constraints.rs")
+            || file_str.contains("__cpi.rs")
+            || file_str.contains("__client.rs")
+        {
+            return;
+        }
+
         let body_src = fn_body_source(func);
 
         // Look for find_program_address or create_program_address calls
@@ -82,11 +104,29 @@ impl<'ast, 'a> Visit<'ast> for PdaVisitor<'a> {
                 || context.contains("authority")
                 || context.contains("owner")
                 || context.contains("mint")
-                || context.contains("signer");
+                || context.contains("signer")
+                || context.contains("payer")
+                || context.contains("wallet")
+                || context.contains("sender")
+                || context.contains("recipient");
 
-            if !has_dynamic_seed {
+            // Skip intentionally global/singleton PDAs
+            let is_global_pda = context.contains("b\"config\"")
+                || context.contains("b\"metadata\"")
+                || context.contains("b\"state\"")
+                || context.contains("b\"global\"")
+                || context.contains("b\"treasury\"")
+                || context.contains("b\"vault\"")
+                || context.contains("b\"admin\"")
+                || context.contains("b\"program\"")
+                || context.contains("CONFIG_SEED")
+                || context.contains("STATE_SEED")
+                || context.contains("GLOBAL_SEED");
+
+            if !has_dynamic_seed && !is_global_pda {
                 self.findings.push(Finding {
                     detector_id: "SOL-010".to_string(),
+                    name: "unsafe-pda-seeds".to_string(),
                     severity: Severity::High,
                     confidence: Confidence::Medium,
                     message: format!(
@@ -97,7 +137,7 @@ impl<'ast, 'a> Visit<'ast> for PdaVisitor<'a> {
                     line: line_num,
                     column: 1,
                     snippet: line.trim().to_string(),
-                    recommendation: "Include user-specific seeds (e.g., user.key().as_ref()) to prevent PDA collisions".to_string(),
+                    recommendation: "Include user-specific seeds (e.g., user.key().as_ref()) to prevent PDA collisions. If this is an intentionally global PDA, use a named seed constant".to_string(),
                     chain: Chain::Solana,
                 });
             }
@@ -132,12 +172,26 @@ mod tests {
     #[test]
     fn test_detects_static_seeds() {
         let source = r#"
-            fn create_vault(program_id: &Pubkey) {
-                let (pda, bump) = Pubkey::find_program_address(&[b"vault"], program_id);
+            fn create_escrow(program_id: &Pubkey) {
+                let (pda, bump) = Pubkey::find_program_address(&[b"escrow"], program_id);
             }
         "#;
         let findings = run_detector(source);
         assert!(!findings.is_empty(), "Should detect static-only PDA seeds");
+    }
+
+    #[test]
+    fn test_no_finding_global_pda() {
+        let source = r#"
+            fn get_config(program_id: &Pubkey) {
+                let (pda, bump) = Pubkey::find_program_address(&[b"config"], program_id);
+            }
+        "#;
+        let findings = run_detector(source);
+        assert!(
+            findings.is_empty(),
+            "Should not flag intentionally global PDAs like config"
+        );
     }
 
     #[test]

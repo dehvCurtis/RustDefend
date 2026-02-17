@@ -75,6 +75,7 @@ impl<'ast, 'a> Visit<'ast> for PayableVisitor<'a> {
         let line = span_to_line(&method.sig.ident.span());
         self.findings.push(Finding {
             detector_id: "INK-010".to_string(),
+            name: "ink-missing-payable-check".to_string(),
             severity: Severity::Medium,
             confidence: Confidence::Medium,
             message: format!(

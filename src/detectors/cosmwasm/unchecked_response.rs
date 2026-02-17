@@ -73,6 +73,7 @@ impl<'ast, 'a> Visit<'ast> for ResponseVisitor<'a> {
             let line = span_to_line(&func.sig.ident.span());
             self.findings.push(Finding {
                 detector_id: "CW-005".to_string(),
+                name: "unchecked-query-response".to_string(),
                 severity: Severity::High,
                 confidence: Confidence::Low,
                 message: format!(
