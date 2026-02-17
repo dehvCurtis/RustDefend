@@ -138,6 +138,7 @@ mod tests {
             source.to_string(),
             ast,
             Chain::Near,
+            std::collections::HashMap::new(),
         );
         SignerVsPredecessorDetector.detect(&ctx)
     }

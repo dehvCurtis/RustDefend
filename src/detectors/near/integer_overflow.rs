@@ -30,6 +30,18 @@ impl Detector for IntegerOverflowDetector {
     }
 
     fn detect(&self, ctx: &ScanContext) -> Vec<Finding> {
+        // Require NEAR-specific source markers to avoid cross-chain FPs
+        if !ctx.source.contains("near_sdk")
+            && !ctx.source.contains("near_contract_standards")
+            && !ctx.source.contains("#[near_bindgen]")
+            && !ctx.source.contains("#[near(")
+            && !ctx.source.contains("env::predecessor_account_id")
+            && !ctx.source.contains("env::signer_account_id")
+            && !ctx.source.contains("Promise::new")
+        {
+            return Vec::new();
+        }
+
         let mut findings = Vec::new();
         let mut visitor = OverflowVisitor {
             findings: &mut findings,
@@ -110,6 +122,7 @@ mod tests {
             source.to_string(),
             ast,
             Chain::Near,
+            std::collections::HashMap::new(),
         );
         IntegerOverflowDetector.detect(&ctx)
     }
@@ -117,6 +130,7 @@ mod tests {
     #[test]
     fn test_detects_wrapping_on_balance() {
         let source = r#"
+            use near_sdk::env;
             fn update_balance(&mut self, amount: u128) {
                 self.balance = self.balance.wrapping_add(amount);
             }
@@ -131,6 +145,7 @@ mod tests {
     #[test]
     fn test_no_finding_checked() {
         let source = r#"
+            use near_sdk::env;
             fn update_balance(&mut self, amount: u128) -> Option<u128> {
                 self.balance.checked_add(amount)
             }

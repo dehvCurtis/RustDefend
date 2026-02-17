@@ -29,6 +29,18 @@ impl Detector for UnsafeStorageKeysDetector {
     }
 
     fn detect(&self, ctx: &ScanContext) -> Vec<Finding> {
+        // Require NEAR-specific source markers to avoid cross-chain FPs
+        if !ctx.source.contains("near_sdk")
+            && !ctx.source.contains("near_contract_standards")
+            && !ctx.source.contains("#[near_bindgen]")
+            && !ctx.source.contains("#[near(")
+            && !ctx.source.contains("env::predecessor_account_id")
+            && !ctx.source.contains("env::signer_account_id")
+            && !ctx.source.contains("Promise::new")
+        {
+            return Vec::new();
+        }
+
         let mut findings = Vec::new();
         let mut visitor = StorageKeyVisitor {
             findings: &mut findings,
@@ -105,6 +117,7 @@ mod tests {
             source.to_string(),
             ast,
             Chain::Near,
+            std::collections::HashMap::new(),
         );
         UnsafeStorageKeysDetector.detect(&ctx)
     }
@@ -112,6 +125,7 @@ mod tests {
     #[test]
     fn test_detects_format_storage_key() {
         let source = r#"
+            use near_sdk::env;
             fn store_user_data(user_id: &str, data: &[u8]) {
                 let key = format!("user_{}", user_id);
                 env::storage_write(key.as_bytes(), data);
@@ -124,6 +138,7 @@ mod tests {
     #[test]
     fn test_no_finding_fixed_prefix() {
         let source = r#"
+            use near_sdk::env;
             fn store_data(data: &[u8]) {
                 env::storage_write(b"config", data);
             }

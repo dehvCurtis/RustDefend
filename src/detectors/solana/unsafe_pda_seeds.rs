@@ -165,6 +165,7 @@ mod tests {
             source.to_string(),
             ast,
             Chain::Solana,
+            std::collections::HashMap::new(),
         );
         UnsafePdaSeedsDetector.detect(&ctx)
     }

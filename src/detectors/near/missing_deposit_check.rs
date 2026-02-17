@@ -30,6 +30,18 @@ impl Detector for MissingDepositCheckDetector {
     }
 
     fn detect(&self, ctx: &ScanContext) -> Vec<Finding> {
+        // Require NEAR-specific source markers to avoid cross-chain FPs
+        if !ctx.source.contains("near_sdk")
+            && !ctx.source.contains("near_contract_standards")
+            && !ctx.source.contains("#[near_bindgen]")
+            && !ctx.source.contains("#[near(")
+            && !ctx.source.contains("env::predecessor_account_id")
+            && !ctx.source.contains("env::signer_account_id")
+            && !ctx.source.contains("Promise::new")
+        {
+            return Vec::new();
+        }
+
         let mut findings = Vec::new();
         let mut visitor = DepositVisitor {
             findings: &mut findings,
@@ -121,6 +133,7 @@ mod tests {
             source.to_string(),
             ast,
             Chain::Near,
+            std::collections::HashMap::new(),
         );
         MissingDepositCheckDetector.detect(&ctx)
     }
@@ -128,6 +141,7 @@ mod tests {
     #[test]
     fn test_detects_missing_deposit_check() {
         let source = r#"
+            use near_sdk::env;
             impl Contract {
                 #[payable]
                 pub fn purchase(&mut self, item_id: u64) {
@@ -142,6 +156,7 @@ mod tests {
     #[test]
     fn test_no_finding_with_deposit_check() {
         let source = r#"
+            use near_sdk::env;
             impl Contract {
                 #[payable]
                 pub fn purchase(&mut self, item_id: u64) {

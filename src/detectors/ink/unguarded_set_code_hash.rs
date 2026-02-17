@@ -110,6 +110,7 @@ mod tests {
             source.to_string(),
             ast,
             Chain::Ink,
+            std::collections::HashMap::new(),
         );
         UnguardedSetCodeHashDetector.detect(&ctx)
     }

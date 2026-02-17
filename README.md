@@ -2,9 +2,14 @@
 
 Static security scanner for Rust smart contracts. Analyzes source code via AST parsing (`syn` crate) to detect vulnerabilities across Solana, CosmWasm, NEAR, and ink! ecosystems.
 
-- **50 detectors** covering the most common smart contract vulnerability classes
+- **56 detectors** covering the most common smart contract vulnerability classes
 - **AST-based analysis** — parses Rust source into syntax trees, no regex pattern matching
+- **Intra-file call graph** — tracks function calls to avoid flagging helpers called from checked entry points
+- **Workspace-aware** — detects chains per-crate in monorepos, eliminating cross-chain noise
 - **Auto-detects chain** from `Cargo.toml` dependencies (solana-program, cosmwasm-std, near-sdk, ink)
+- **Baseline diff for CI** — track findings over time, show only new findings in pull requests
+- **Incremental scanning** — caches results per file, skips unchanged files on re-scan
+- **Project config** — `.rustdefend.toml` for ignoring detectors, files, and setting severity thresholds
 - **Parallel file processing** via `rayon` for fast scans on large codebases
 - **Multiple output formats** — colored text, JSON, SARIF v2.1.0
 - **~65% true positive rate** validated against 6 real-world repositories (SPL, Anchor, cw-plus, NEAR SDK, Neodyme CTF, CosmWasm CTF)
@@ -46,6 +51,17 @@ rustdefend scan . --format text    # colored terminal output (default)
 rustdefend scan . --format json    # JSON array
 rustdefend scan . --format sarif   # SARIF v2.1.0 for CI/CD
 
+# Baseline diff (CI workflows)
+rustdefend scan . --save-baseline baseline.json    # capture current findings
+rustdefend scan . --baseline baseline.json         # show only new findings
+
+# Incremental scanning (skip unchanged files)
+rustdefend scan . --incremental
+rustdefend scan . --incremental --cache-path .rustdefend.cache.json
+
+# Project config
+rustdefend scan . --config .rustdefend.toml
+
 # List available detectors
 rustdefend list-detectors
 rustdefend list-detectors --chain near
@@ -54,17 +70,35 @@ rustdefend list-detectors --chain near
 rustdefend scan . --quiet
 ```
 
+## Project Config
+
+Create a `.rustdefend.toml` in your project root:
+
+```toml
+# Detector IDs to ignore project-wide
+ignore = ["SOL-003", "CW-001"]
+
+# File patterns to skip entirely
+ignore_files = ["generated/**", "vendor/**"]
+
+# Optional minimum severity/confidence
+min_severity = "high"
+min_confidence = "medium"
+```
+
+Pass explicitly with `--config` or place at the project root for auto-detection.
+
 ## Detectors
 
-50 detectors across 4 chains + cross-chain dependency analysis:
+56 detectors across 4 chains + cross-chain dependency analysis:
 
 | Chain | Count | Docs |
 |-------|-------|------|
-| Solana | 14 | [docs/detectors/solana/](docs/detectors/solana/) |
-| CosmWasm | 11 | [docs/detectors/cosmwasm/](docs/detectors/cosmwasm/) |
+| Solana | 16 | [docs/detectors/solana/](docs/detectors/solana/) |
+| CosmWasm | 13 | [docs/detectors/cosmwasm/](docs/detectors/cosmwasm/) |
 | NEAR | 12 | [docs/detectors/near/](docs/detectors/near/) |
 | ink! | 11 | [docs/detectors/ink/](docs/detectors/ink/) |
-| Cross-chain | 2 | [docs/detectors/common/](docs/detectors/common/) |
+| Cross-chain | 4 | [docs/detectors/common/](docs/detectors/common/) |
 
 See [docs/detectors/](docs/detectors/) for the full detector index and [all_detectors.json](docs/detectors/all_detectors.json) for machine-readable metadata.
 
@@ -82,6 +116,19 @@ See [docs/detectors/](docs/detectors/) for the full detector index and [all_dete
   uses: github/codeql-action/upload-sarif@v3
   with:
     sarif_file: results.sarif
+```
+
+### Baseline diff (block PRs on new findings only)
+
+```yaml
+- name: Run RustDefend (diff against baseline)
+  run: |
+    rustdefend scan . --baseline baseline.json --format json > new-findings.json
+    COUNT=$(jq length new-findings.json)
+    if [ "$COUNT" -gt 0 ]; then
+      echo "$COUNT new findings detected"
+      exit 1
+    fi
 ```
 
 ### Exit codes

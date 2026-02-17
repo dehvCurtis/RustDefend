@@ -242,6 +242,11 @@ impl<'ast, 'a> Visit<'ast> for OverflowVisitor<'a> {
             return;
         }
 
+        // Skip compile-time constant expressions (size_of, align_of, etc.)
+        if expr_str.contains("size_of") || expr_str.contains("align_of") {
+            return;
+        }
+
         // Skip widening casts: (a as u128) * (b as u128) is safe
         if is_widening_cast(&expr.left) && is_widening_cast(&expr.right) {
             syn::visit::visit_expr_binary(self, expr);
@@ -384,6 +389,7 @@ mod tests {
             full_source,
             ast,
             Chain::Solana,
+            std::collections::HashMap::new(),
         );
         IntegerOverflowDetector.detect(&ctx)
     }

@@ -93,6 +93,7 @@ mod tests {
             source.to_string(),
             ast,
             Chain::Near,
+            std::collections::HashMap::new(),
         );
         StorageStakingDetector.detect(&ctx)
     }

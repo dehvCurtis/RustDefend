@@ -43,8 +43,8 @@ jobs:
       - name: Verify detector count
         run: |
           COUNT=$(jq length docs/detectors/all_detectors.json)
-          if [ "$COUNT" -ne 50 ]; then
-            echo "Expected 50 detectors, found $COUNT"
+          if [ "$COUNT" -ne 56 ]; then
+            echo "Expected 56 detectors, found $COUNT"
             exit 1
           fi
           echo "Detector count verified: $COUNT"
@@ -103,6 +103,25 @@ jobs:
           name: rustdefend-report
           path: rustdefend-report.json
           if-no-files-found: ignore
+
+  integration-tests:
+    name: Integration Tests
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build release
+        run: cargo build --release
+
+      - name: Run integration tests
+        run: cargo test --features integration-tests --test integration -- --nocapture
 
   coverage:
     name: Code Coverage

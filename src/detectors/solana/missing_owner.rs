@@ -6,6 +6,7 @@ use crate::detectors::Detector;
 use crate::scanner::context::ScanContext;
 use crate::scanner::finding::*;
 use crate::utils::ast_helpers::*;
+use crate::utils::call_graph::{self, CheckKind};
 
 pub struct MissingOwnerDetector;
 
@@ -30,6 +31,16 @@ impl Detector for MissingOwnerDetector {
     }
 
     fn detect(&self, ctx: &ScanContext) -> Vec<Finding> {
+        // Require Solana-specific source markers to avoid cross-chain FPs
+        if !ctx.source.contains("solana_program")
+            && !ctx.source.contains("anchor_lang")
+            && !ctx.source.contains("AccountInfo")
+            && !ctx.source.contains("ProgramResult")
+            && !ctx.source.contains("solana_sdk")
+        {
+            return Vec::new();
+        }
+
         let mut findings = Vec::new();
         let mut visitor = OwnerVisitor {
             findings: &mut findings,
@@ -76,7 +87,16 @@ impl<'ast, 'a> Visit<'ast> for OwnerVisitor<'a> {
         let has_owner_check = body_src.contains("owner")
             && (body_src.contains("program_id") || body_src.contains("key ()"));
 
+        // Check if any caller in the same file already checks owner (call graph analysis)
         if !has_owner_check {
+            let fn_name = func.sig.ident.to_string();
+            if call_graph::caller_has_check(
+                &self.ctx.call_graph,
+                &fn_name,
+                CheckKind::OwnerCheck,
+            ) {
+                return;
+            }
             let line = span_to_line(&func.sig.ident.span());
             self.findings.push(Finding {
                 detector_id: "SOL-002".to_string(),
@@ -104,11 +124,13 @@ mod tests {
 
     fn run_detector(source: &str) -> Vec<Finding> {
         let ast = syn::parse_file(source).unwrap();
+        let graph = crate::utils::call_graph::build_call_graph(&ast);
         let ctx = ScanContext::new(
             std::path::PathBuf::from("test.rs"),
             source.to_string(),
             ast,
             Chain::Solana,
+            graph,
         );
         MissingOwnerDetector.detect(&ctx)
     }
@@ -123,6 +145,27 @@ mod tests {
         "#;
         let findings = run_detector(source);
         assert!(!findings.is_empty(), "Should detect missing owner check");
+    }
+
+    #[test]
+    fn test_no_finding_caller_checks_owner() {
+        let source = r#"
+            fn process(account: &AccountInfo, program_id: &Pubkey) {
+                if account.owner != program_id {
+                    return Err(ProgramError::IncorrectProgramId);
+                }
+                helper(account);
+            }
+
+            fn helper(account: &AccountInfo) {
+                let data = MyData::deserialize(&mut &account.data.borrow()[..]).unwrap();
+            }
+        "#;
+        let findings = run_detector(source);
+        assert!(
+            findings.is_empty(),
+            "Should not flag when caller checks owner (call graph analysis)"
+        );
     }
 
     #[test]

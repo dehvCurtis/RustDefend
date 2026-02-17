@@ -1,25 +1,25 @@
 # RustDefend Detectors
 
-RustDefend includes **50 detectors** across 4 smart contract ecosystems plus cross-chain dependency analysis.
+RustDefend includes **56 detectors** across 4 smart contract ecosystems plus cross-chain dependency analysis.
 
 ## Detector Categories
 
 | Chain | Count | Detectors |
 |-------|-------|-----------|
-| [Solana](solana/) | 14 | SOL-001 through SOL-014 |
-| [CosmWasm](cosmwasm/) | 11 | CW-001 through CW-011 |
+| [Solana](solana/) | 16 | SOL-001 through SOL-016 |
+| [CosmWasm](cosmwasm/) | 13 | CW-001 through CW-013 |
 | [NEAR](near/) | 12 | NEAR-001 through NEAR-012 |
 | [ink!](ink/) | 11 | INK-001 through INK-011 |
-| [Cross-chain](common/) | 2 | DEP-001, DEP-002 |
+| [Cross-chain](common/) | 4 | DEP-001 through DEP-004 |
 
 ## Severity Distribution
 
 | Severity | Count |
 |----------|-------|
-| Critical | 11 |
-| High | 25 |
-| Medium | 12 |
-| Low | 2 |
+| Critical | 12 |
+| High | 27 |
+| Medium | 14 |
+| Low | 3 |
 
 ## Machine-Readable Index
 
@@ -38,7 +38,14 @@ Severities reflect 2024+ ecosystem mitigations:
 
 All detectors include FP reduction filters validated against 6 real-world repositories (521 findings, ~65% estimated TP rate):
 
+### Cross-Cutting
+
 - **Global:** Test file/directory exclusion (`/tests/`, `_test.rs`, `#[test]`)
+- **Call graph analysis:** Before emitting a finding, checks if any caller in the same file already performs the relevant security check (signer, owner, input validation). Helper functions called from checked entry points are not flagged
+- **Workspace chain detection:** In monorepos, each crate's `Cargo.toml` is read independently. SOL detectors only run on Solana crates, CW detectors only on CosmWasm crates, etc. — eliminates cross-chain noise
+
+### Per-Detector
+
 - **SOL-001:** Skips internal helpers (`_*`, `handle_*`), utility functions (`validate*`, `parse*`), non-signer params (`sysvar`, `pda`, `vault`, `config`), `process_*` sub-handlers, CPI wrapper helpers (`transfer`, `burn`, `mint_to`, etc.), framework library paths
 - **SOL-003:** Requires Solana-specific source markers (no cross-chain FPs). Skips math helper functions (`calculate_*`, `compute_*`, `*_fee`, `*_rate`), assert/require-guarded functions, pack/serialization functions, SPL library paths
 - **SOL-010:** Skips Anchor codegen, intentionally global PDAs (`b"config"`, `b"state"`, `b"vault"`)

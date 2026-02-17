@@ -135,6 +135,7 @@ mod tests {
             source.to_string(),
             ast,
             Chain::CosmWasm,
+            std::collections::HashMap::new(),
         );
         MissingAddressValidationDetector.detect(&ctx)
     }

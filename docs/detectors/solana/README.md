@@ -1,6 +1,6 @@
 # Solana Detectors
 
-14 detectors for Solana smart contracts (native and Anchor).
+16 detectors for Solana smart contracts (native and Anchor).
 
 | ID | Name | Severity | Confidence |
 |----|------|----------|------------|
@@ -18,6 +18,8 @@
 | SOL-012 | Token-2022 extension safety | High | Medium |
 | SOL-013 | Unsafe remaining_accounts | High | Medium |
 | SOL-014 | init_if_needed reinitialization | High | Medium |
+| SOL-015 | Lookup table manipulation | High | Medium |
+| SOL-016 | Missing priority fee | Low | Low |
 
 ---
 
@@ -117,3 +119,17 @@
 - Detects Anchor `init_if_needed` constraint without guard checks against reinitialization.
 - Safe patterns: `is_initialized`, `AlreadyInitialized`, `constraint =` on same attribute.
 - Skips `TokenAccount`, `AssociatedTokenAccount`, `Mint` types (token program manages state).
+
+## SOL-015: lookup-table-manipulation
+
+- **Severity:** High | **Confidence:** Medium
+- Detects `AddressLookupTableAccount` usage without authority/freeze verification.
+- Unverified lookup tables can be manipulated to redirect transactions to attacker-controlled addresses.
+- Safe patterns: `authority` check, `freeze_authority`, `deactivation_slot`, `is_frozen` check.
+
+## SOL-016: missing-priority-fee
+
+- **Severity:** Low | **Confidence:** Low
+- Detects `set_compute_unit_limit` without `set_compute_unit_price` in the same scope.
+- Transactions without priority fees may be dropped during congestion.
+- Informational finding — not a security vulnerability.

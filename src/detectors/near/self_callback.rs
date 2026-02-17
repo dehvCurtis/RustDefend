@@ -102,6 +102,7 @@ mod tests {
             source.to_string(),
             ast,
             Chain::Near,
+            std::collections::HashMap::new(),
         );
         SelfCallbackDetector.detect(&ctx)
     }

@@ -48,6 +48,26 @@ pub struct ScanArgs {
     /// Quiet mode - only output exit code (0 = clean, 1 = findings)
     #[arg(long, short)]
     pub quiet: bool,
+
+    /// Compare against a baseline file and only report new findings
+    #[arg(long)]
+    pub baseline: Option<String>,
+
+    /// Save current findings as a baseline file
+    #[arg(long)]
+    pub save_baseline: Option<String>,
+
+    /// Path to project config file (default: .rustdefend.toml in scan root)
+    #[arg(long)]
+    pub config: Option<String>,
+
+    /// Enable incremental scanning with cached results
+    #[arg(long)]
+    pub incremental: bool,
+
+    /// Path to the scan cache file (default: <scan_root>/.rustdefend.cache.json)
+    #[arg(long)]
+    pub cache_path: Option<String>,
 }
 
 #[derive(Parser)]

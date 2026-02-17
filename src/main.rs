@@ -5,7 +5,9 @@ use anyhow::Result;
 use clap::Parser;
 use colored::Colorize;
 
+use rustdefend::baseline;
 use rustdefend::cli::{Cli, Commands};
+use rustdefend::config;
 use rustdefend::report::json::JsonReporter;
 use rustdefend::report::sarif::SarifReporter;
 use rustdefend::report::text::TextReporter;
@@ -33,6 +35,16 @@ fn run_scan(args: rustdefend::cli::ScanArgs) -> Result<()> {
         process::exit(2);
     }
 
+    // Load project config
+    let project_config = if let Some(ref config_path) = args.config {
+        config::load_project_config(Path::new(config_path)).unwrap_or_else(|e| {
+            eprintln!("{} Failed to load config: {}", "Warning:".yellow().bold(), e);
+            config::ProjectConfig::default()
+        })
+    } else {
+        config::load_config_or_default(path)
+    };
+
     let mut scanner = Scanner::new();
 
     // Apply chain filter
@@ -48,7 +60,7 @@ fn run_scan(args: rustdefend::cli::ScanArgs) -> Result<()> {
         scanner = scanner.with_chain_filter(chains);
     }
 
-    // Apply severity filter
+    // Apply severity filter (CLI flag takes precedence over config)
     if let Some(ref sev_str) = args.severity {
         let sevs: Vec<Severity> = sev_str
             .split(',')
@@ -59,7 +71,7 @@ fn run_scan(args: rustdefend::cli::ScanArgs) -> Result<()> {
         }
     }
 
-    // Apply confidence filter
+    // Apply confidence filter (CLI flag takes precedence over config)
     if let Some(ref conf_str) = args.confidence {
         if let Some(conf) = Confidence::from_str_loose(conf_str.trim()) {
             scanner = scanner.with_confidence_filter(conf);
@@ -75,7 +87,66 @@ fn run_scan(args: rustdefend::cli::ScanArgs) -> Result<()> {
         scanner = scanner.with_detector_filter(dets);
     }
 
-    let findings = scanner.scan(path)?;
+    // Apply config ignore_files to scanner
+    if !project_config.ignore_files.is_empty() {
+        scanner = scanner.with_ignore_files(project_config.ignore_files.clone(), path.to_path_buf());
+    }
+
+    // Apply incremental cache
+    if args.incremental {
+        let cache_path = args
+            .cache_path
+            .as_ref()
+            .map(|p| std::path::PathBuf::from(p))
+            .unwrap_or_else(|| path.join(".rustdefend.cache.json"));
+        scanner = scanner.with_cache(cache_path);
+    }
+
+    let mut findings = scanner.scan(path)?;
+
+    // Apply config-level detector ignores
+    if !project_config.ignore.is_empty() {
+        findings.retain(|f| !project_config.ignore.contains(&f.detector_id));
+    }
+
+    // Apply config-level min_severity
+    if let Some(ref min_sev) = project_config.min_severity {
+        if let Some(min) = Severity::from_str_loose(min_sev) {
+            findings.retain(|f| f.severity >= min);
+        }
+    }
+
+    // Apply config-level min_confidence
+    if let Some(ref min_conf) = project_config.min_confidence {
+        if let Some(min) = Confidence::from_str_loose(min_conf) {
+            findings.retain(|f| f.confidence >= min);
+        }
+    }
+
+    // Save baseline if requested
+    if let Some(ref save_path) = args.save_baseline {
+        baseline::save_baseline(&findings, path, Path::new(save_path))?;
+        eprintln!(
+            "{} Baseline saved with {} findings to {}",
+            "Info:".blue().bold(),
+            findings.len(),
+            save_path
+        );
+    }
+
+    // Diff against baseline if provided
+    let findings = if let Some(ref baseline_path) = args.baseline {
+        let bl = baseline::load_baseline(Path::new(baseline_path))?;
+        let (new_findings, suppressed) = baseline::diff_against_baseline(&findings, &bl, path);
+        eprintln!(
+            "{} {} findings suppressed by baseline",
+            "Info:".blue().bold(),
+            suppressed
+        );
+        new_findings
+    } else {
+        findings
+    };
 
     if args.quiet {
         process::exit(if findings.is_empty() { 0 } else { 1 });

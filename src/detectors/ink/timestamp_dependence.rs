@@ -25,6 +25,16 @@ impl Detector for TimestampDependenceDetector {
     }
 
     fn detect(&self, ctx: &ScanContext) -> Vec<Finding> {
+        // Require ink!-specific source markers to avoid cross-chain FPs
+        if !ctx.source.contains("#[ink(")
+            && !ctx.source.contains("#[ink::")
+            && !ctx.source.contains("ink_storage")
+            && !ctx.source.contains("ink_env")
+            && !ctx.source.contains("ink_lang")
+        {
+            return Vec::new();
+        }
+
         let mut findings = Vec::new();
 
         for (line_idx, line) in ctx.source.lines().enumerate() {
@@ -73,6 +83,7 @@ mod tests {
             source.to_string(),
             ast,
             Chain::Ink,
+            std::collections::HashMap::new(),
         );
         TimestampDependenceDetector.detect(&ctx)
     }
@@ -80,6 +91,7 @@ mod tests {
     #[test]
     fn test_detects_timestamp_comparison() {
         let source = r#"
+            #[ink(message)]
             fn is_expired(&self) -> bool {
                 self.env().block_timestamp() > self.deadline
             }

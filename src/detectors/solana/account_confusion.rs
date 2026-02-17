@@ -30,6 +30,16 @@ impl Detector for AccountConfusionDetector {
     }
 
     fn detect(&self, ctx: &ScanContext) -> Vec<Finding> {
+        // Require Solana-specific source markers to avoid cross-chain FPs
+        if !ctx.source.contains("solana_program")
+            && !ctx.source.contains("anchor_lang")
+            && !ctx.source.contains("AccountInfo")
+            && !ctx.source.contains("ProgramResult")
+            && !ctx.source.contains("solana_sdk")
+        {
+            return Vec::new();
+        }
+
         let mut findings = Vec::new();
         let mut visitor = ConfusionVisitor {
             findings: &mut findings,
@@ -128,6 +138,7 @@ mod tests {
             source.to_string(),
             ast,
             Chain::Solana,
+            std::collections::HashMap::new(),
         );
         AccountConfusionDetector.detect(&ctx)
     }

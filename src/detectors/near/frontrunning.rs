@@ -29,6 +29,18 @@ impl Detector for FrontrunningDetector {
     }
 
     fn detect(&self, ctx: &ScanContext) -> Vec<Finding> {
+        // Require NEAR-specific source markers to avoid cross-chain FPs
+        if !ctx.source.contains("near_sdk")
+            && !ctx.source.contains("near_contract_standards")
+            && !ctx.source.contains("#[near_bindgen]")
+            && !ctx.source.contains("#[near(")
+            && !ctx.source.contains("env::predecessor_account_id")
+            && !ctx.source.contains("env::signer_account_id")
+            && !ctx.source.contains("Promise::new")
+        {
+            return Vec::new();
+        }
+
         let mut findings = Vec::new();
         let mut visitor = FrontrunVisitor {
             findings: &mut findings,
@@ -104,6 +116,7 @@ mod tests {
             source.to_string(),
             ast,
             Chain::Near,
+            std::collections::HashMap::new(),
         );
         FrontrunningDetector.detect(&ctx)
     }
@@ -111,6 +124,7 @@ mod tests {
     #[test]
     fn test_detects_frontrunning_risk() {
         let source = r#"
+            use near_sdk::Promise;
             fn claim_reward(&mut self, amount: u128, recipient: AccountId) {
                 Promise::new(recipient).transfer(amount);
             }
@@ -122,6 +136,7 @@ mod tests {
     #[test]
     fn test_no_finding_with_deadline() {
         let source = r#"
+            use near_sdk::{Promise, env};
             fn claim_reward(&mut self, amount: u128, recipient: AccountId, deadline: u64) {
                 assert!(env::block_timestamp() < deadline, "Expired");
                 Promise::new(recipient).transfer(amount);

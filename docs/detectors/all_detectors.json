@@ -398,5 +398,53 @@
     "severity": "Medium",
     "confidence": "Medium",
     "chain": "ink"
+  },
+  {
+    "id": "SOL-015",
+    "name": "lookup-table-manipulation",
+    "description": "Detects AddressLookupTableAccount usage without authority/freeze verification",
+    "severity": "High",
+    "confidence": "Medium",
+    "chain": "solana"
+  },
+  {
+    "id": "SOL-016",
+    "name": "missing-priority-fee",
+    "description": "Detects set_compute_unit_limit without set_compute_unit_price in same scope",
+    "severity": "Low",
+    "confidence": "Low",
+    "chain": "solana"
+  },
+  {
+    "id": "CW-012",
+    "name": "sylvia-pattern-issues",
+    "description": "Detects Sylvia #[sv::msg(exec)] methods with storage writes but no auth checks",
+    "severity": "Medium",
+    "confidence": "Medium",
+    "chain": "cosmwasm"
+  },
+  {
+    "id": "CW-013",
+    "name": "cw2-migration-issues",
+    "description": "Detects cosmwasm-std 2.x API misuse (from_binary/to_binary deprecated in favor of from_json/to_json_binary)",
+    "severity": "Medium",
+    "confidence": "Medium",
+    "chain": "cosmwasm"
+  },
+  {
+    "id": "DEP-003",
+    "name": "build-script-abuse",
+    "description": "Detects build.rs files with network downloads or arbitrary shell execution",
+    "severity": "Critical",
+    "confidence": "Medium",
+    "chain": "common"
+  },
+  {
+    "id": "DEP-004",
+    "name": "proc-macro-supply-chain",
+    "description": "Detects proc-macro dependencies with unpinned versions in Cargo.toml",
+    "severity": "High",
+    "confidence": "Low",
+    "chain": "common"
   }
 ]

@@ -4,10 +4,12 @@ mod cpi_reentrancy;
 mod init_if_needed;
 mod insecure_account_close;
 mod integer_overflow;
+mod lookup_table;
 mod missing_owner;
 mod missing_rent_exempt;
 mod missing_signer;
 mod pda_issues;
+mod priority_fee;
 mod remaining_accounts;
 mod token_extensions;
 mod unchecked_return;
@@ -32,4 +34,6 @@ pub fn register(detectors: &mut Vec<Box<dyn Detector>>) {
     detectors.push(Box::new(token_extensions::TokenExtensionsDetector));
     detectors.push(Box::new(remaining_accounts::RemainingAccountsDetector));
     detectors.push(Box::new(init_if_needed::InitIfNeededDetector));
+    detectors.push(Box::new(lookup_table::LookupTableDetector));
+    detectors.push(Box::new(priority_fee::PriorityFeeDetector));
 }

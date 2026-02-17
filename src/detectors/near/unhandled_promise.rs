@@ -27,6 +27,18 @@ impl Detector for UnhandledPromiseDetector {
     fn detect(&self, ctx: &ScanContext) -> Vec<Finding> {
         let mut findings = Vec::new();
 
+        // Require NEAR-specific source markers to avoid cross-chain FPs
+        if !ctx.source.contains("near_sdk")
+            && !ctx.source.contains("near_contract_standards")
+            && !ctx.source.contains("#[near_bindgen]")
+            && !ctx.source.contains("#[near(")
+            && !ctx.source.contains("env::predecessor_account_id")
+            && !ctx.source.contains("env::signer_account_id")
+            && !ctx.source.contains("Promise::new")
+        {
+            return Vec::new();
+        }
+
         // Skip SDK infrastructure / macro definition files
         // These define the callback_unwrap attribute itself, not use it
         let path_str = ctx.file_path.to_string_lossy();
@@ -85,6 +97,7 @@ mod tests {
             source.to_string(),
             ast,
             Chain::Near,
+            std::collections::HashMap::new(),
         );
         UnhandledPromiseDetector.detect(&ctx)
     }
@@ -92,6 +105,7 @@ mod tests {
     #[test]
     fn test_detects_callback_unwrap() {
         let source = r#"
+            use near_sdk::env;
             #[callback_unwrap]
             fn on_transfer_complete(&mut self, amount: U128) {
                 self.transferred += amount.0;
@@ -104,6 +118,7 @@ mod tests {
     #[test]
     fn test_no_finding_callback_result() {
         let source = r#"
+            use near_sdk::env;
             #[callback_result]
             fn on_transfer_complete(&mut self, result: Result<U128, PromiseError>) {
                 match result {

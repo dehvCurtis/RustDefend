@@ -36,6 +36,15 @@ impl Detector for InitIfNeededDetector {
             return Vec::new();
         }
 
+        // Require Anchor-specific source markers — init_if_needed is an Anchor feature
+        if !ctx.source.contains("anchor_lang")
+            && !ctx.source.contains("Anchor")
+            && !ctx.source.contains("#[account(")
+            && !ctx.source.contains("#[derive(Accounts)]")
+        {
+            return Vec::new();
+        }
+
         let mut findings = Vec::new();
         let mut visitor = InitIfNeededVisitor {
             findings: &mut findings,
@@ -151,6 +160,7 @@ mod tests {
             source.to_string(),
             ast,
             Chain::Solana,
+            std::collections::HashMap::new(),
         );
         InitIfNeededDetector.detect(&ctx)
     }

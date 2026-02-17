@@ -8,9 +8,12 @@ use rayon::prelude::*;
 use walkdir::WalkDir;
 
 use crate::detectors::common::outdated_deps::OutdatedDepsDetector;
+use crate::detectors::common::proc_macro_risk::ProcMacroRiskDetector;
 use crate::detectors::common::supply_chain::SupplyChainDetector;
 use crate::detectors::DetectorRegistry;
+use crate::utils::call_graph;
 use crate::utils::chain_detect;
+use crate::utils::workspace;
 use context::ScanContext;
 use finding::{Chain, Confidence, Finding, Severity};
 
@@ -20,6 +23,8 @@ pub struct Scanner {
     filter_severities: Option<Vec<Severity>>,
     filter_confidence: Option<Confidence>,
     filter_detectors: Option<Vec<String>>,
+    ignore_files: Option<(Vec<String>, PathBuf)>,
+    cache_path: Option<PathBuf>,
 }
 
 impl Scanner {
@@ -30,6 +35,8 @@ impl Scanner {
             filter_severities: None,
             filter_confidence: None,
             filter_detectors: None,
+            ignore_files: None,
+            cache_path: None,
         }
     }
 
@@ -53,6 +60,16 @@ impl Scanner {
         self
     }
 
+    pub fn with_ignore_files(mut self, patterns: Vec<String>, scan_root: PathBuf) -> Self {
+        self.ignore_files = Some((patterns, scan_root));
+        self
+    }
+
+    pub fn with_cache(mut self, cache_path: PathBuf) -> Self {
+        self.cache_path = Some(cache_path);
+        self
+    }
+
     pub fn scan(&self, path: &Path) -> Result<Vec<Finding>> {
         // Detect chains from Cargo.toml
         let detected_chains = chain_detect::detect_chains(path);
@@ -65,24 +82,58 @@ impl Scanner {
             vec![Chain::Solana, Chain::CosmWasm, Chain::Near, Chain::Ink]
         };
 
+        // Build workspace chain map for per-file chain detection
+        let chain_map = workspace::build_workspace_chain_map(path);
+
+        // Load cache if incremental mode is enabled
+        let cache = self
+            .cache_path
+            .as_ref()
+            .map(|p| crate::cache::load_cache(p));
+
         // Collect all .rs files
-        let rust_files: Vec<PathBuf> = Self::collect_rust_files(path);
+        let mut rust_files: Vec<PathBuf> = Self::collect_rust_files(path);
+
+        // Apply ignore_files filter
+        if let Some((ref patterns, ref scan_root)) = self.ignore_files {
+            rust_files.retain(|f| !crate::config::file_is_ignored(f, scan_root, patterns));
+        }
 
         if rust_files.is_empty() {
             anyhow::bail!("No Rust source files found in {}", path.display());
         }
 
-        // Get active detectors
+        // Get detectors for all possible chains (filtering happens per-file)
+        let all_chains = vec![Chain::Solana, Chain::CosmWasm, Chain::Near, Chain::Ink];
+        let detector_chains = if self.filter_chains.is_some() {
+            &active_chains
+        } else {
+            &all_chains
+        };
         let detectors = self.registry.get_detectors(
-            &active_chains,
+            detector_chains,
             self.filter_severities.as_deref(),
             self.filter_detectors.as_deref(),
         );
 
         // Process files in parallel
-        let findings: Vec<Finding> = rust_files
+        let file_results: Vec<(PathBuf, u64, Vec<Finding>)> = rust_files
             .par_iter()
             .flat_map(|file_path| {
+                // Check cache first
+                let mtime = std::fs::metadata(file_path)
+                    .and_then(|m| m.modified())
+                    .ok()
+                    .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
+                    .map(|d| d.as_secs())
+                    .unwrap_or(0);
+
+                if let Some(ref cache) = cache {
+                    if let Some(cached_findings) = cache.lookup(file_path, mtime) {
+                        return vec![(file_path.clone(), mtime, cached_findings)];
+                    }
+                }
+
                 let source = match std::fs::read_to_string(file_path) {
                     Ok(s) => s,
                     Err(_) => return vec![],
@@ -93,11 +144,26 @@ impl Scanner {
                     Err(_) => return vec![],
                 };
 
+                // Build call graph once per file
+                let graph = call_graph::build_call_graph(&ast);
+
+                // Determine which chains apply to this specific file
+                let file_chains = if self.filter_chains.is_some() {
+                    active_chains.clone()
+                } else {
+                    workspace::chains_for_file(&chain_map, file_path, &active_chains)
+                };
+
                 // Run each chain's detectors against this file
                 let mut file_findings = Vec::new();
-                for &chain in &active_chains {
-                    let ctx =
-                        ScanContext::new(file_path.clone(), source.clone(), ast.clone(), chain);
+                for &chain in &file_chains {
+                    let ctx = ScanContext::new(
+                        file_path.clone(),
+                        source.clone(),
+                        ast.clone(),
+                        chain,
+                        graph.clone(),
+                    );
 
                     for detector in &detectors {
                         if detector.chain() != chain {
@@ -109,20 +175,42 @@ impl Scanner {
                         file_findings.extend(results);
                     }
                 }
-                file_findings
+                vec![(file_path.clone(), mtime, file_findings)]
             })
             .collect();
 
-        // Run DEP-001 and DEP-002 on Cargo.toml files
-        let mut findings = findings;
+        // Extract findings and update cache
+        let mut findings: Vec<Finding> = Vec::new();
+        let mut new_cache = if self.cache_path.is_some() {
+            Some(crate::cache::ScanCache::new())
+        } else {
+            None
+        };
+
+        for (file_path, mtime, file_findings) in file_results {
+            if let Some(ref mut c) = new_cache {
+                c.store(file_path, mtime, file_findings.clone());
+            }
+            findings.extend(file_findings);
+        }
+
+        // Save updated cache
+        if let (Some(ref cache_path), Some(cache)) = (&self.cache_path, new_cache) {
+            let _ = crate::cache::save_cache(&cache, cache_path);
+        }
+
+        // Run DEP-001, DEP-002, and DEP-004 on Cargo.toml files
         let dep_detector = OutdatedDepsDetector;
         let sc_detector = SupplyChainDetector;
+        let pm_detector = ProcMacroRiskDetector;
         let cargo_tomls = Self::collect_cargo_tomls(path);
         for cargo_toml in &cargo_tomls {
             let dep_findings = dep_detector.detect_cargo_toml(cargo_toml);
             findings.extend(dep_findings);
             let sc_findings = sc_detector.detect_cargo_toml(cargo_toml);
             findings.extend(sc_findings);
+            let pm_findings = pm_detector.detect_cargo_toml(cargo_toml);
+            findings.extend(pm_findings);
         }
 
         // Apply confidence filter

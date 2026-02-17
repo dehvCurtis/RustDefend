@@ -6,6 +6,7 @@ use crate::detectors::Detector;
 use crate::scanner::context::ScanContext;
 use crate::scanner::finding::*;
 use crate::utils::ast_helpers::*;
+use crate::utils::call_graph::{self, CheckKind};
 
 pub struct MissingSignerDetector;
 
@@ -213,6 +214,17 @@ impl<'ast, 'a> Visit<'ast> for SignerVisitor<'a> {
             || body_src.contains("borrow_mut")
             || body_src.contains("invoke");
 
+        // Check if any caller in the same file already checks signer (call graph analysis)
+        if !has_signer_check
+            && call_graph::caller_has_check(
+                &self.ctx.call_graph,
+                &fn_name,
+                CheckKind::SignerCheck,
+            )
+        {
+            return;
+        }
+
         // Emit a single finding per function (not per param) to avoid noise
         if !has_signer_check && has_mutations {
             let line = span_to_line(&func.sig.ident.span());
@@ -252,11 +264,13 @@ mod tests {
 
     fn run_detector(source: &str) -> Vec<Finding> {
         let ast = syn::parse_file(source).unwrap();
+        let graph = crate::utils::call_graph::build_call_graph(&ast);
         let ctx = ScanContext::new(
             std::path::PathBuf::from("test.rs"),
             source.to_string(),
             ast,
             Chain::Solana,
+            graph,
         );
         MissingSignerDetector.detect(&ctx)
     }
@@ -350,6 +364,28 @@ mod tests {
         assert!(
             findings.is_empty(),
             "Should not flag internal helper functions (prefixed with _)"
+        );
+    }
+
+    #[test]
+    fn test_no_finding_caller_checks_signer() {
+        let source = r#"
+            fn process_instruction(account: &AccountInfo, recipient: &AccountInfo) {
+                if !account.is_signer {
+                    return Err(ProgramError::MissingRequiredSignature);
+                }
+                withdraw_funds(account, recipient);
+            }
+
+            fn withdraw_funds(account: &AccountInfo, recipient: &AccountInfo) {
+                let mut data = account.try_borrow_mut_data().unwrap();
+                data.serialize(&mut *recipient.try_borrow_mut_data().unwrap()).unwrap();
+            }
+        "#;
+        let findings = run_detector(source);
+        assert!(
+            findings.is_empty(),
+            "Should not flag when caller checks signer (call graph analysis)"
         );
     }
 

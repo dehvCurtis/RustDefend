@@ -95,6 +95,7 @@ mod tests {
             source.to_string(),
             ast,
             Chain::Solana,
+            std::collections::HashMap::new(),
         );
         PdaIssuesDetector.detect(&ctx)
     }

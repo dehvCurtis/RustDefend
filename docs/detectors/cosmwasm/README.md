@@ -1,6 +1,6 @@
 # CosmWasm Detectors
 
-11 detectors for CosmWasm smart contracts.
+13 detectors for CosmWasm smart contracts.
 
 | ID | Name | Severity | Confidence |
 |----|------|----------|------------|
@@ -15,6 +15,8 @@
 | CW-009 | Missing address validation (`Addr::unchecked`) | High | Medium |
 | CW-010 | Unguarded migrate entry | Medium | Medium |
 | CW-011 | Missing reply ID validation | Medium | Medium |
+| CW-012 | Sylvia pattern issues | Medium | Medium |
+| CW-013 | CW2 migration issues | Medium | Medium |
 
 ---
 
@@ -89,3 +91,17 @@
 - Detects `reply` handler not matching on `msg.id`, processing all submessage replies identically.
 - Checks for `msg.id`, `reply.id`, `REPLY_ID`, `SubMsgResult`, `match msg`/`match reply` patterns.
 - Skips trivial implementations (less than 50 non-whitespace characters).
+
+## CW-012: sylvia-pattern-issues
+
+- **Severity:** Medium | **Confidence:** Medium
+- Detects `#[sv::msg(exec)]` methods in Sylvia contracts that write to storage without auth checks.
+- Sylvia's macro system generates CosmWasm entry points from annotated methods; missing auth in exec methods exposes state mutations.
+- Safe patterns: `info.sender` check, `ensure!`/`require!`/`assert!` with sender, `is_admin`/`is_owner` check.
+
+## CW-013: cw2-migration-issues
+
+- **Severity:** Medium | **Confidence:** Medium
+- Detects cosmwasm-std 2.x API misuse: `from_binary`/`to_binary` deprecated in favor of `from_json`/`to_json_binary`.
+- Using deprecated APIs may break on future cosmwasm-std updates.
+- Also detects other 2.x migration patterns that may need updating.

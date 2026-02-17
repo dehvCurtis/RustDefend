@@ -30,6 +30,16 @@ impl Detector for ErrorHandlingDetector {
     }
 
     fn detect(&self, ctx: &ScanContext) -> Vec<Finding> {
+        // Require ink!-specific source markers to avoid cross-chain FPs
+        if !ctx.source.contains("#[ink(")
+            && !ctx.source.contains("#[ink::")
+            && !ctx.source.contains("ink_storage")
+            && !ctx.source.contains("ink_env")
+            && !ctx.source.contains("ink_lang")
+        {
+            return Vec::new();
+        }
+
         let mut findings = Vec::new();
         let mut visitor = ErrorVisitor {
             findings: &mut findings,
@@ -122,6 +132,7 @@ mod tests {
             source.to_string(),
             ast,
             Chain::Ink,
+            std::collections::HashMap::new(),
         );
         ErrorHandlingDetector.detect(&ctx)
     }
@@ -129,6 +140,7 @@ mod tests {
     #[test]
     fn test_detects_suppressed_result() {
         let source = r#"
+            #[ink(message)]
             fn send_tokens(&mut self) {
                 let _ = self.env().transfer(dest, amount);
             }

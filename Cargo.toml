@@ -1,6 +1,6 @@
 [package]
 name = "rustdefend"
-version = "0.3.2"
+version = "0.4.0"
 edition = "2021"
 description = "Static security scanner for Rust smart contracts"
 license = "MIT"
@@ -17,3 +17,14 @@ rayon = "1"
 colored = "2"
 toml = "0.8"
 anyhow = "1"
+
+[dev-dependencies]
+tempfile = "3"
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[features]
+integration-tests = []
+
+[[bench]]
+name = "scan_throughput"
+harness = false

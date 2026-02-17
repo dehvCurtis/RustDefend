@@ -1,21 +1,30 @@
 use std::path::PathBuf;
 
 use crate::scanner::finding::Chain;
+use crate::utils::call_graph::CallGraph;
 
 pub struct ScanContext {
     pub file_path: PathBuf,
     pub source: String,
     pub ast: syn::File,
     pub chain: Chain,
+    pub call_graph: CallGraph,
 }
 
 impl ScanContext {
-    pub fn new(file_path: PathBuf, source: String, ast: syn::File, chain: Chain) -> Self {
+    pub fn new(
+        file_path: PathBuf,
+        source: String,
+        ast: syn::File,
+        chain: Chain,
+        call_graph: CallGraph,
+    ) -> Self {
         Self {
             file_path,
             source,
             ast,
             chain,
+            call_graph,
         }
     }
 

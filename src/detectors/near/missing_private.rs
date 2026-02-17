@@ -29,6 +29,18 @@ impl Detector for MissingPrivateDetector {
     }
 
     fn detect(&self, ctx: &ScanContext) -> Vec<Finding> {
+        // Require NEAR-specific source markers to avoid cross-chain FPs
+        if !ctx.source.contains("near_sdk")
+            && !ctx.source.contains("near_contract_standards")
+            && !ctx.source.contains("#[near_bindgen]")
+            && !ctx.source.contains("#[near(")
+            && !ctx.source.contains("env::predecessor_account_id")
+            && !ctx.source.contains("env::signer_account_id")
+            && !ctx.source.contains("Promise::new")
+        {
+            return Vec::new();
+        }
+
         let mut findings = Vec::new();
         let mut visitor = PrivateVisitor {
             findings: &mut findings,
@@ -100,6 +112,7 @@ mod tests {
             source.to_string(),
             ast,
             Chain::Near,
+            std::collections::HashMap::new(),
         );
         MissingPrivateDetector.detect(&ctx)
     }
@@ -107,6 +120,8 @@ mod tests {
     #[test]
     fn test_detects_missing_private() {
         let source = r#"
+            use near_sdk::env;
+            #[near_bindgen]
             impl Contract {
                 pub fn on_transfer_complete(&mut self, amount: U128) {
                     self.total += amount.0;

@@ -1,11 +1,13 @@
 # Cross-Chain Detectors
 
-2 cross-chain detectors for dependency analysis.
+4 cross-chain detectors for dependency and build analysis.
 
 | ID | Name | Severity | Confidence |
 |----|------|----------|------------|
 | DEP-001 | Outdated dependencies with known CVEs | High | High |
 | DEP-002 | Supply chain risk indicators | High | High |
+| DEP-003 | Build script abuse | Critical | Medium |
+| DEP-004 | Proc-macro supply chain | High | Low |
 
 ---
 
@@ -51,3 +53,21 @@
 - Skips `workspace = true` (inherited version)
 - Skips `[dev-dependencies]` for wildcard detection (crates.io allows wildcards there)
 - Git deps with `rev =` or `tag =` are considered pinned (safe)
+
+## DEP-003: build-script-abuse
+
+- **Severity:** Critical | **Confidence:** Medium
+- Detects `build.rs` files with network downloads or arbitrary shell execution.
+- Build scripts execute at compile time with full system access. Network-fetching build scripts can introduce supply chain attacks.
+- Trigger patterns: `reqwest`, `curl`, `wget`, `hyper::Client`, `Command::new("curl")`, `Command::new("sh")`, `Command::new("bash")`.
+- Also flags `fs::write` combined with `Command` (download-and-execute pattern).
+- Only scans files named `build.rs`.
+
+## DEP-004: proc-macro-supply-chain
+
+- **Severity:** High | **Confidence:** Low
+- Detects proc-macro dependencies with unpinned versions in `Cargo.toml`.
+- Proc macros execute arbitrary code at compile time. Unpinned versions allow silent updates to potentially malicious releases.
+- Checks for: wildcard versions (`*`), major-only versions (`"1"`), git deps without `rev` or `tag`.
+- Proc-macro detection: crate names ending in `_derive`, `_macro`, `-derive`, `-macro`, or containing `proc-macro`/`proc_macro`.
+- Skips `path =` dependencies and `workspace = true` (inherited versions).

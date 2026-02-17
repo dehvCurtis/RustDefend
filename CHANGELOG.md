@@ -4,6 +4,25 @@ All notable changes to RustDefend will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.4.0] - 2026-02-17
+
+### Added
+
+- **Workspace-aware chain detection** — monorepo support: reads workspace member Cargo.tomls to map each crate to its specific chains, eliminating cross-chain noise (SOL detectors no longer fire on NEAR/CosmWasm code in the same workspace)
+- **Intra-file call graph analysis** — builds per-file call graph from AST. Before emitting findings, checks if any caller already performs the relevant security check (signer, owner, input validation). Reduces false positives for helper functions called from checked entry points
+- **Baseline diff for CI** — `--save-baseline <path.json>` captures current findings; `--baseline <path.json>` shows only new findings. Fingerprints are line-number-independent (stable across code insertions)
+- **Project config** — `.rustdefend.toml` support with `ignore` (detector IDs), `ignore_files` (glob patterns), `min_severity`, `min_confidence`
+- **Incremental scan caching** — `--incremental` flag caches findings per file keyed by mtime. Unchanged files skip read/parse/detect entirely. Cache stored at `--cache-path` or `<scan_root>/.rustdefend.cache.json`
+- **6 new detectors** (56 total):
+  - SOL-015: Lookup table manipulation — detects `AddressLookupTableAccount` usage without authority/freeze verification (High/Medium)
+  - SOL-016: Missing priority fee — detects `set_compute_unit_limit` without `set_compute_unit_price` (Low/Low)
+  - CW-012: Sylvia pattern issues — detects `#[sv::msg(exec)]` methods without auth checks (Medium/Medium)
+  - CW-013: CW2 migration issues — detects cosmwasm-std 2.x API misuse (`from_binary`/`to_binary` deprecated) (Medium/Medium)
+  - DEP-003: Build script abuse — detects `build.rs` with network downloads or shell execution (Critical/Medium)
+  - DEP-004: Proc-macro supply chain — detects proc-macro deps with unpinned versions (High/Low)
+- **Integration test corpus** — automated validation against 3 real-world repos (solana-attack-vectors, cosmwasm-security-dojo, scout-audit), gated behind `--features integration-tests`
+- **Criterion benchmarks** — `cargo bench` measures scan throughput for single file, directory, and test fixtures
+
 ## [0.3.2] - 2026-02-17
 
 ### Changed
