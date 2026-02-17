@@ -35,8 +35,8 @@ ENTRYPOINT ["rustdefend"]
 
 LABEL org.opencontainers.image.title="RustDefend" \
       org.opencontainers.image.description="Static security scanner for Rust smart contracts" \
-      org.opencontainers.image.version="0.1.0" \
-      org.opencontainers.image.authors="dehvCurtis" \
-      org.opencontainers.image.url="https://github.com/dehvCurtis/RustDefend" \
-      org.opencontainers.image.source="https://github.com/dehvCurtis/RustDefend" \
+      org.opencontainers.image.version="0.3.1" \
+      org.opencontainers.image.authors="BlockSecOps" \
+      org.opencontainers.image.url="https://github.com/BlockSecOps/RustDefend" \
+      org.opencontainers.image.source="https://github.com/BlockSecOps/RustDefend" \
       org.opencontainers.image.licenses="MIT"

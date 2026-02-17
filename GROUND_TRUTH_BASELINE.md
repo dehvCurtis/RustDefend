@@ -1,7 +1,7 @@
 # RustDefend Ground Truth Baseline
 
-**Generated:** 2026-02-16
-**Scanner Version:** 0.3.0
+**Generated:** 2026-02-17
+**Scanner Version:** 0.3.1
 **Total Detectors:** 50
 
 ---

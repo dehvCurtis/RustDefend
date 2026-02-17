@@ -15,14 +15,14 @@ Static security scanner for Rust smart contracts. Analyzes source code via AST p
 Requires Rust 1.70+.
 
 ```bash
-git clone https://github.com/dehvCurtis/RustDefend.git
+git clone https://github.com/BlockSecOps/RustDefend.git
 cd RustDefend
 cargo install --path .
 ```
 
 ### Pre-built binaries
 
-Download from [GitHub Releases](https://github.com/dehvCurtis/RustDefend/releases). Available for Linux (x86_64, aarch64), macOS (x86_64, aarch64), and Windows (x86_64).
+Download from [GitHub Releases](https://github.com/BlockSecOps/RustDefend/releases). Available for Linux (x86_64, aarch64), macOS (x86_64, aarch64), and Windows (x86_64).
 
 ## Usage
 

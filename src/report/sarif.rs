@@ -63,7 +63,7 @@ impl Reporter for SarifReporter {
                     "driver": {
                         "name": "RustDefend",
                         "version": env!("CARGO_PKG_VERSION"),
-                        "informationUri": "https://github.com/rustdefend/rustdefend",
+                        "informationUri": "https://github.com/BlockSecOps/RustDefend",
                         "rules": rules
                     }
                 },
