@@ -1,5 +1,23 @@
 # Solana Detectors
 
+11 detectors for Solana smart contracts (native and Anchor).
+
+| ID | Name | Severity | Confidence |
+|----|------|----------|------------|
+| SOL-001 | Missing signer check | Critical | High |
+| SOL-002 | Missing owner check | Critical | High |
+| SOL-003 | Integer overflow | Critical | Medium |
+| SOL-004 | Account confusion (missing discriminator) | High | Medium |
+| SOL-005 | Insecure account close | High | Medium |
+| SOL-006 | Arbitrary CPI | Critical | Medium |
+| SOL-007 | PDA bump misuse | High | High |
+| SOL-008 | Unchecked CPI return | High | High |
+| SOL-009 | CPI reentrancy (CEI violation) | Medium | Low |
+| SOL-010 | Unsafe PDA seeds | High | Medium |
+| SOL-011 | Missing rent exemption | Medium | Medium |
+
+---
+
 ## SOL-001: missing-signer-check
 
 - **Severity:** Critical | **Confidence:** High

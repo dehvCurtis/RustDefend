@@ -280,6 +280,75 @@ Based on 2024-2026 vulnerability research, the following emerging threat categor
 
 ---
 
+## Test Fixtures for Zero-Finding Detectors
+
+11 detectors had zero findings in the main test corpus because those repos are well-written. To verify these detectors work end-to-end (beyond unit tests), intentionally vulnerable fixtures are provided in `test-fixtures/`.
+
+| Fixture | Detector | Findings |
+|---------|----------|----------|
+| `solana/unchecked_cpi.rs` | SOL-008 | 2 |
+| `cosmwasm/missing_sender.rs` | CW-003 | 1 |
+| `cosmwasm/storage_collision.rs` | CW-004 | 2 |
+| `cosmwasm/unbounded_iteration.rs` | CW-007 | 2 |
+| `near/storage_no_auth.rs` | NEAR-003 | 3 |
+| `near/unguarded_pending.rs` | NEAR-007 | 2 |
+| `near/unsafe_storage_key.rs` | NEAR-009 | 2 |
+| `ink/allow_reentry.rs` | INK-001 | 2 |
+| `ink/timestamp_compare.rs` | INK-004 | 3 |
+| `ink/unsafe_delegate.rs` | INK-009 | 2 |
+| `Cargo.toml` | DEP-001 | 6 |
+
+See `test-fixtures/README.md` for usage.
+
+---
+
+## Candidate Real-World Repos for Expanded Corpus
+
+The following repositories contain known vulnerability patterns and would provide real-world coverage for the zero-finding detectors. Sorted by expected detector coverage.
+
+### Solana
+
+| Repository | Detectors | Description |
+|------------|-----------|-------------|
+| [neodyme-labs/neodyme-breakpoint-workshop](https://github.com/neodyme-labs/neodyme-breakpoint-workshop) | SOL-008, SOL-001, SOL-002, SOL-006 | Solana Security Workshop CTF challenges (level0-level3). Intentionally vulnerable processors with unchecked CPI, missing signer/owner checks. |
+| [crytic/building-secure-contracts](https://github.com/crytic/building-secure-contracts) (not-so-smart-contracts/solana/) | SOL-006, SOL-008 | Trail of Bits' reference collection of vulnerable Solana patterns. |
+| [Ackee-Blockchain/solana-common-attack-vectors](https://github.com/Ackee-Blockchain/solana-common-attack-vectors) | SOL-001, SOL-002, SOL-006, SOL-008 | 11 common Solana attack vectors with PoC tests. Covers account reloading, arbitrary CPI, signer authorization. |
+
+### CosmWasm
+
+| Repository | Detectors | Description |
+|------------|-----------|-------------|
+| [oak-security/cosmwasm-ctf](https://github.com/oak-security/cosmwasm-ctf) | CW-003, CW-004, CW-007 | 10 CTF challenges from Oak Security (AwesomWasm 2023). Missing auth, unbounded iteration, storage bugs. |
+| [oak-security/cosmwasm-security-dojo](https://github.com/oak-security/cosmwasm-security-dojo) | CW-003, CW-007 | Beginner-to-medium challenges. Challenge 2: access control bugs in a lending contract. |
+| [jcsec-security/cosmwasm-security-spotlight](https://github.com/jcsec-security/cosmwasm-security-spotlight) | CW-003, CW-009 | Labs from Oak Security blog series on real audit findings. Covers sender checks and address validation. |
+
+### NEAR
+
+| Repository | Detectors | Description |
+|------------|-----------|-------------|
+| [near/near-sdk-rs](https://github.com/near/near-sdk-rs) (older examples) | NEAR-003, NEAR-007 | Reference NEP-145 implementation. Early versions of community contracts used `signer_account_id()` instead of `predecessor_account_id()`. |
+
+Sigma Prime's NEAR audit blog series documents vulnerable patterns for NEAR-003, NEAR-007, and NEAR-009:
+- [Accounts & Access Control](https://blog.sigmaprime.io/near-accounts-and-access-control.html)
+- [Sharding & Cross Contract Calls](https://blog.sigmaprime.io/near-sharding-cross-contract-calls.html)
+- [Storage](https://blog.sigmaprime.io/near-storage.html)
+
+### ink!
+
+| Repository | Detectors | Description |
+|------------|-----------|-------------|
+| [CoinFabrik/scout-audit](https://github.com/CoinFabrik/scout-audit) (test-cases/) | INK-001, INK-004, INK-009 | Vulnerable/remediated ink! contract pairs. Covers reentrancy, timestamp dependence, delegate_call. |
+| [CoinFabrik/web3-grant](https://github.com/CoinFabrik/web3-grant) (curated-list-of-vulnerabilities/) | INK-001, INK-004 | Web3 Foundation-funded collection of 7 vulnerability types for ink!. |
+
+### Cross-chain (DEP-001)
+
+Any project with pinned outdated dependencies will trigger DEP-001. Good candidates:
+- Older forks of DeFi protocols not updated in 6+ months
+- Projects using `anchor-lang < 0.28.0`, `cosmwasm-std < 1.4.4`, `near-sdk < 4.0.0`, `ink < 4.0.0`
+- See [RUSTSEC-2024-0338](https://rustsec.org/advisories/RUSTSEC-2024-0338.html) (cosmwasm-std) and [RUSTSEC-2024-0366](https://rustsec.org/advisories/RUSTSEC-2024-0366.html) (cosmwasm-vm)
+
+---
+
 ## Methodology Notes
 
 - **Scanner configuration:** Default settings, `--chain` flag used per-repository

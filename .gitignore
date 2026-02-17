@@ -1,8 +1,49 @@
+# Rust build artifacts
 /target
+**/*.rs.bk
+*.pdb
+
+# Release artifacts
 /releases
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Coverage
+*.profraw
+*.profdata
+lcov.info
+tarpaulin-report.html
+coverage/
+
+# Security - never commit
+.env
+.env.*
+*.pem
+*.key
+*.p12
+credentials.json
+
+# Test outputs
+*.sarif
+rustdefend-report.*
+test-results/
+
+# Temporary files
 *.swp
 *.swo
 *~
+*.tmp
+*.bak
+
+# OS files
 .DS_Store
+Thumbs.db
+
+# Test contracts (large, cloned separately)
 /test-contracts
+
+# Misc
 /.intentionally-empty-file.o

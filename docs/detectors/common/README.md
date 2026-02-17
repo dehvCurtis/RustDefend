@@ -1,5 +1,13 @@
 # Cross-Chain Detectors
 
+1 cross-chain detector for dependency analysis.
+
+| ID | Name | Severity | Confidence |
+|----|------|----------|------------|
+| DEP-001 | Outdated dependencies with known CVEs | High | High |
+
+---
+
 ## DEP-001: outdated-dependencies
 
 - **Severity:** High | **Confidence:** High

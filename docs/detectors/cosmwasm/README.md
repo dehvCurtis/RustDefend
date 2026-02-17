@@ -1,5 +1,20 @@
 # CosmWasm Detectors
 
+8 detectors for CosmWasm smart contracts.
+
+| ID | Name | Severity | Confidence |
+|----|------|----------|------------|
+| CW-001 | Integer overflow | Medium | Medium |
+| CW-002 | Reentrancy (CEI violation) | Low | Low |
+| CW-003 | Missing sender check | Critical | Medium |
+| CW-004 | Storage prefix collision | High | High |
+| CW-005 | Unchecked query response | High | Low |
+| CW-006 | Improper error handling (panic in entry point) | High | High |
+| CW-007 | Unbounded iteration | High | Medium |
+| CW-009 | Missing address validation (`Addr::unchecked`) | High | Medium |
+
+---
+
 ## CW-001: cosmwasm-integer-overflow
 
 - **Severity:** Medium | **Confidence:** Medium

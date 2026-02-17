@@ -1,0 +1,322 @@
+[
+  {
+    "id": "SOL-001",
+    "name": "missing-signer-check",
+    "description": "Detects functions accepting AccountInfo without verifying is_signer",
+    "severity": "Critical",
+    "confidence": "High",
+    "chain": "solana"
+  },
+  {
+    "id": "SOL-002",
+    "name": "missing-owner-check",
+    "description": "Detects deserialization of account data without verifying account.owner == program_id",
+    "severity": "Critical",
+    "confidence": "High",
+    "chain": "solana"
+  },
+  {
+    "id": "SOL-003",
+    "name": "integer-overflow",
+    "description": "Detects unchecked arithmetic operations on integer types in Solana BPF programs",
+    "severity": "Critical",
+    "confidence": "Medium",
+    "chain": "solana"
+  },
+  {
+    "id": "SOL-004",
+    "name": "account-confusion",
+    "description": "Detects manual account deserialization without 8-byte discriminator check",
+    "severity": "High",
+    "confidence": "Medium",
+    "chain": "solana"
+  },
+  {
+    "id": "SOL-005",
+    "name": "insecure-account-close",
+    "description": "Detects account closure that zeros lamports but doesn't zero data and set discriminator",
+    "severity": "High",
+    "confidence": "Medium",
+    "chain": "solana"
+  },
+  {
+    "id": "SOL-006",
+    "name": "arbitrary-cpi",
+    "description": "Detects invoke() or CpiContext::new() where the program target comes from untrusted input",
+    "severity": "Critical",
+    "confidence": "Medium",
+    "chain": "solana"
+  },
+  {
+    "id": "SOL-007",
+    "name": "pda-bump-misuse",
+    "description": "Detects create_program_address() with user-provided bump seeds",
+    "severity": "High",
+    "confidence": "High",
+    "chain": "solana"
+  },
+  {
+    "id": "SOL-008",
+    "name": "unchecked-cpi-return",
+    "description": "Detects CPI calls without error propagation via ? operator",
+    "severity": "High",
+    "confidence": "High",
+    "chain": "solana"
+  },
+  {
+    "id": "SOL-009",
+    "name": "cpi-reentrancy",
+    "description": "Detects state mutations after CPI calls (CEI violation)",
+    "severity": "Medium",
+    "confidence": "Low",
+    "chain": "solana"
+  },
+  {
+    "id": "SOL-010",
+    "name": "unsafe-pda-seeds",
+    "description": "Detects PDA derivation with only static seeds (no user-specific components)",
+    "severity": "High",
+    "confidence": "Medium",
+    "chain": "solana"
+  },
+  {
+    "id": "SOL-011",
+    "name": "missing-rent-exempt",
+    "description": "Detects create_account calls without Rent::get() or minimum_balance checks",
+    "severity": "Medium",
+    "confidence": "Medium",
+    "chain": "solana"
+  },
+  {
+    "id": "CW-001",
+    "name": "cosmwasm-integer-overflow",
+    "description": "Detects unchecked arithmetic on Uint128/Uint256 types",
+    "severity": "Medium",
+    "confidence": "Medium",
+    "chain": "cosmwasm"
+  },
+  {
+    "id": "CW-002",
+    "name": "cosmwasm-reentrancy",
+    "description": "Detects storage writes followed by add_message()/add_submessage() (CEI violation)",
+    "severity": "Low",
+    "confidence": "Low",
+    "chain": "cosmwasm"
+  },
+  {
+    "id": "CW-003",
+    "name": "missing-sender-check",
+    "description": "Detects ExecuteMsg match arms that mutate storage without checking info.sender",
+    "severity": "Critical",
+    "confidence": "Medium",
+    "chain": "cosmwasm"
+  },
+  {
+    "id": "CW-004",
+    "name": "storage-collision",
+    "description": "Detects duplicate storage prefix strings across Map::new() and Item::new() calls",
+    "severity": "High",
+    "confidence": "High",
+    "chain": "cosmwasm"
+  },
+  {
+    "id": "CW-005",
+    "name": "unchecked-query-response",
+    "description": "Detects querier results used without bounds or validity checks",
+    "severity": "High",
+    "confidence": "Low",
+    "chain": "cosmwasm"
+  },
+  {
+    "id": "CW-006",
+    "name": "improper-error-handling",
+    "description": "Detects unwrap(), expect(), panic!() in entry point functions",
+    "severity": "High",
+    "confidence": "High",
+    "chain": "cosmwasm"
+  },
+  {
+    "id": "CW-007",
+    "name": "unbounded-iteration",
+    "description": "Detects .range() or .iter() without .take() in execute handlers",
+    "severity": "High",
+    "confidence": "Medium",
+    "chain": "cosmwasm"
+  },
+  {
+    "id": "CW-009",
+    "name": "cosmwasm-missing-addr-validation",
+    "description": "Detects Addr::unchecked() usage in non-test code",
+    "severity": "High",
+    "confidence": "Medium",
+    "chain": "cosmwasm"
+  },
+  {
+    "id": "NEAR-001",
+    "name": "promise-reentrancy",
+    "description": "Detects state mutation before Promise::new()/ext_*:: calls without #[private] callback guard",
+    "severity": "Critical",
+    "confidence": "Medium",
+    "chain": "near"
+  },
+  {
+    "id": "NEAR-002",
+    "name": "signer-vs-predecessor",
+    "description": "Detects env::signer_account_id() used in access control instead of predecessor_account_id()",
+    "severity": "High",
+    "confidence": "High",
+    "chain": "near"
+  },
+  {
+    "id": "NEAR-003",
+    "name": "storage-staking-auth",
+    "description": "Detects storage_deposit/storage_withdraw handlers without predecessor_account_id() check",
+    "severity": "High",
+    "confidence": "Medium",
+    "chain": "near"
+  },
+  {
+    "id": "NEAR-004",
+    "name": "callback-unwrap-usage",
+    "description": "Detects #[callback_unwrap] attribute usage instead of #[callback_result]",
+    "severity": "High",
+    "confidence": "High",
+    "chain": "near"
+  },
+  {
+    "id": "NEAR-005",
+    "name": "near-wrapping-arithmetic",
+    "description": "Detects wrapping_*/saturating_* on balance/amount variables that silently mask overflow",
+    "severity": "Critical",
+    "confidence": "Medium",
+    "chain": "near"
+  },
+  {
+    "id": "NEAR-006",
+    "name": "missing-private-callback",
+    "description": "Detects public methods named on_* or *_callback without #[private] attribute",
+    "severity": "Critical",
+    "confidence": "High",
+    "chain": "near"
+  },
+  {
+    "id": "NEAR-007",
+    "name": "self-callback-state",
+    "description": "Detects pending_* field writes before ext_self:: calls without guard checks",
+    "severity": "High",
+    "confidence": "Medium",
+    "chain": "near"
+  },
+  {
+    "id": "NEAR-008",
+    "name": "frontrunning-risk",
+    "description": "Detects Promise::new().transfer() with user-provided parameters without commit-reveal patterns",
+    "severity": "High",
+    "confidence": "Low",
+    "chain": "near"
+  },
+  {
+    "id": "NEAR-009",
+    "name": "unsafe-storage-keys",
+    "description": "Detects storage key construction from user input via format!()",
+    "severity": "Medium",
+    "confidence": "Medium",
+    "chain": "near"
+  },
+  {
+    "id": "NEAR-010",
+    "name": "missing-deposit-check",
+    "description": "Detects #[payable] methods that don't reference env::attached_deposit()",
+    "severity": "High",
+    "confidence": "High",
+    "chain": "near"
+  },
+  {
+    "id": "INK-001",
+    "name": "ink-reentrancy",
+    "description": "Detects set_allow_reentry(true) which opens reentrancy attacks",
+    "severity": "Critical",
+    "confidence": "High",
+    "chain": "ink"
+  },
+  {
+    "id": "INK-002",
+    "name": "ink-integer-overflow",
+    "description": "Detects unchecked arithmetic on Balance/u128 types",
+    "severity": "Low",
+    "confidence": "Medium",
+    "chain": "ink"
+  },
+  {
+    "id": "INK-003",
+    "name": "ink-missing-caller-check",
+    "description": "Detects #[ink(message)] functions with &mut self that write storage without verifying caller",
+    "severity": "Critical",
+    "confidence": "Medium",
+    "chain": "ink"
+  },
+  {
+    "id": "INK-004",
+    "name": "ink-timestamp-dependence",
+    "description": "Detects block_timestamp() usage in comparison or arithmetic expressions",
+    "severity": "Medium",
+    "confidence": "Medium",
+    "chain": "ink"
+  },
+  {
+    "id": "INK-005",
+    "name": "ink-unbounded-storage",
+    "description": "Detects .push() on Vec or .insert() on Mapping without a preceding length check",
+    "severity": "Medium",
+    "confidence": "Medium",
+    "chain": "ink"
+  },
+  {
+    "id": "INK-006",
+    "name": "ink-cross-contract",
+    "description": "Detects try_invoke() without ? or match on result",
+    "severity": "High",
+    "confidence": "High",
+    "chain": "ink"
+  },
+  {
+    "id": "INK-007",
+    "name": "ink-panic-usage",
+    "description": "Detects unwrap(), expect(), panic!() inside #[ink(message)] or #[ink(constructor)] functions",
+    "severity": "High",
+    "confidence": "High",
+    "chain": "ink"
+  },
+  {
+    "id": "INK-008",
+    "name": "ink-result-suppression",
+    "description": "Detects let _ = expr where expr returns Result, silently suppressing errors",
+    "severity": "Medium",
+    "confidence": "Medium",
+    "chain": "ink"
+  },
+  {
+    "id": "INK-009",
+    "name": "ink-unsafe-delegate-call",
+    "description": "Detects delegate_call with user-controlled code hash parameter",
+    "severity": "Critical",
+    "confidence": "High",
+    "chain": "ink"
+  },
+  {
+    "id": "INK-010",
+    "name": "ink-missing-payable-check",
+    "description": "Detects non-payable #[ink(message)] methods that reference transferred_value()",
+    "severity": "Medium",
+    "confidence": "Medium",
+    "chain": "ink"
+  },
+  {
+    "id": "DEP-001",
+    "name": "outdated-dependencies",
+    "description": "Detects known-vulnerable dependency versions in Cargo.toml",
+    "severity": "High",
+    "confidence": "High",
+    "chain": "common"
+  }
+]

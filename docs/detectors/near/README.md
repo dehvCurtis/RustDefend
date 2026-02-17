@@ -1,5 +1,22 @@
 # NEAR Detectors
 
+10 detectors for NEAR smart contracts.
+
+| ID | Name | Severity | Confidence |
+|----|------|----------|------------|
+| NEAR-001 | Promise reentrancy | Critical | Medium |
+| NEAR-002 | Signer vs predecessor confusion | High | High |
+| NEAR-003 | Storage staking auth bypass | High | Medium |
+| NEAR-004 | Callback unwrap usage | High | High |
+| NEAR-005 | Wrapping arithmetic on balances | Critical | Medium |
+| NEAR-006 | Missing #[private] on callback | Critical | High |
+| NEAR-007 | Self-callback state inconsistency | High | Medium |
+| NEAR-008 | Frontrunning risk | High | Low |
+| NEAR-009 | Unsafe storage keys | Medium | Medium |
+| NEAR-010 | Missing deposit check on #[payable] | High | High |
+
+---
+
 ## NEAR-001: promise-reentrancy
 
 - **Severity:** Critical | **Confidence:** Medium

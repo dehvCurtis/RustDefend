@@ -1,5 +1,22 @@
 # ink! Detectors
 
+10 detectors for ink! smart contracts.
+
+| ID | Name | Severity | Confidence |
+|----|------|----------|------------|
+| INK-001 | Reentrancy (allow_reentry) | Critical | High |
+| INK-002 | Integer overflow | Low | Medium |
+| INK-003 | Missing caller check | Critical | Medium |
+| INK-004 | Timestamp dependence | Medium | Medium |
+| INK-005 | Unbounded storage growth | Medium | Medium |
+| INK-006 | Unchecked cross-contract call | High | High |
+| INK-007 | Panic in message/constructor | High | High |
+| INK-008 | Result suppression (`let _ =`) | Medium | Medium |
+| INK-009 | Unsafe delegate call | Critical | High |
+| INK-010 | Missing payable check | Medium | Medium |
+
+---
+
 ## INK-001: ink-reentrancy
 
 - **Severity:** Critical | **Confidence:** High
