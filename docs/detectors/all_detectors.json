@@ -115,8 +115,8 @@
     "id": "CW-001",
     "name": "cosmwasm-integer-overflow",
     "description": "Detects unchecked arithmetic on Uint128/Uint256 types",
-    "severity": "Medium",
-    "confidence": "Medium",
+    "severity": "Low",
+    "confidence": "Low",
     "chain": "cosmwasm"
   },
   {

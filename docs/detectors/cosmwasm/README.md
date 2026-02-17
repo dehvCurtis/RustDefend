@@ -4,8 +4,8 @@
 
 | ID | Name | Severity | Confidence |
 |----|------|----------|------------|
-| CW-001 | Integer overflow | Medium | Medium |
-| CW-002 | Reentrancy (CEI violation) | Low | Low |
+| CW-001 | Integer overflow | Low | Low |
+| CW-002 | Reentrancy (CEI violation, IBC/reply only) | Low | Low |
 | CW-003 | Missing sender check | Critical | Medium |
 | CW-004 | Storage prefix collision | High | High |
 | CW-005 | Unchecked query response | High | Low |
@@ -20,15 +20,17 @@
 
 ## CW-001: cosmwasm-integer-overflow
 
-- **Severity:** Medium | **Confidence:** Medium
+- **Severity:** Low | **Confidence:** Low
 - Detects unchecked arithmetic on `Uint128`/`Uint256` types.
-- Medium severity because CosmWasm's types panic on overflow (safe revert, not exploitable). Use `checked_*` for graceful error handling.
+- Low severity because CosmWasm's types panic on overflow (safe revert, not exploitable). Use `checked_*` for graceful error handling.
+- Skips test/mock/helper functions.
 
 ## CW-002: cosmwasm-reentrancy
 
 - **Severity:** Low | **Confidence:** Low
-- Detects storage writes (`.save()`) followed by `add_message()` / `add_submessage()`.
-- Informational only. CosmWasm's actor model is non-reentrant by design.
+- Detects storage writes (`.save()`) followed by `add_message()` / `add_submessage()` in IBC/reply handlers.
+- Only flags IBC handlers, reply handlers, and SubMsg dispatchers — the only contexts where CosmWasm's non-reentrancy guarantee can be circumvented (CWA-2024-007).
+- Non-IBC execute handlers are not flagged.
 
 ## CW-003: missing-sender-check
 

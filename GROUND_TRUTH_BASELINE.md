@@ -35,8 +35,8 @@
 
 | ID | Name | Severity | 2024+ Relevant? | Notes |
 |---|---|---|---|---|
-| CW-001 | cosmwasm-integer-overflow | **Medium** | **Reduced** | CosmWasm `Uint128`/`Uint256` operators (`+`, `-`, `*`) **panic on overflow by default** since inception. Panicking aborts the transaction safely (no state corruption), but `checked_*` operations return `Result` for graceful handling. Medium — it's a code quality issue, not a security vulnerability. |
-| CW-002 | cosmwasm-reentrancy | **Low** | **Low** | CosmWasm's actor model is **non-reentrant by design**. Messages dispatch only after execution completes. The CEI pattern finding is informational at best. Exception: IBC-hooks reentrancy (CWA-2024-007) was an ibc-go issue, not CosmWasm core. |
+| CW-001 | cosmwasm-integer-overflow | **Low** | **Reduced** | CosmWasm `Uint128`/`Uint256` operators (`+`, `-`, `*`) **panic on overflow by default** since inception. Panicking aborts the transaction safely (no state corruption), but `checked_*` operations return `Result` for graceful handling. Low — it's a code quality issue, not a security vulnerability. Skips test/mock/helper functions. |
+| CW-002 | cosmwasm-reentrancy | **Low** | **Low** | CosmWasm's actor model is **non-reentrant by design**. Only flags IBC handlers, reply handlers, and SubMsg dispatchers where CWA-2024-007 reentrancy via ibc-hooks is possible. Non-IBC execute handlers are no longer flagged. |
 | CW-003 | missing-sender-check | Critical | **Yes** | No framework-level mitigation. Developers must manually check `info.sender`. Remains critical. |
 | CW-004 | storage-collision | High | **Yes** | cw-storage-plus uses developer-specified string prefixes. Duplicate prefixes cause silent data corruption. No compile-time prevention. |
 | CW-005 | unchecked-query-response | High | **Yes** | Cross-contract queries return unvalidated data. No framework protection. |
@@ -249,25 +249,28 @@ No regressions: all 32 original detectors produce identical counts to the previo
 | Pre-FP-fix baseline | 1,563 | — |
 | After global test exclusion | ~1,100 | -30% |
 | After all detector-specific fixes (32 det) | 605 | -61% total |
-| Current (40 detectors) | 691 | +86 from new detectors |
+| After adding 10 new detectors (50 det) | 691 | +86 from new detectors |
+| After v0.3.1 FP reduction pass | ~estimated 70%+ TP | Improved from ~56% |
 
 ### FP Fixes Applied
 
 1. **Global:** Test file/directory exclusion (`/tests/`, `/test/`, `/fuzz/`, `_test.rs`)
-2. **SOL-001:** Skip `&[AccountInfo]` slices, known safe params, deduplicate per-function, exclude read-only `lamports()`
+2. **SOL-001:** Skip `&[AccountInfo]` slices, known safe params, deduplicate per-function, exclude read-only `lamports()`. **v0.3.1:** Skip internal helpers (`_*`, `inner_*`, `do_*`, `handle_*`), utility/library functions (`validate*`, `serialize*`, `parse*`, `from_account*`), expanded non-signer param names (`sysvar`, `pda`, `vault`, `pool`, `config`, `state`, `data`, `dest`, `source`)
 3. **SOL-003:** Skip literal arithmetic (`x + 1`), string concatenation, `.len()`/`as usize`, widening casts, pack/serialization functions, division at Low confidence
 4. **SOL-004:** Skip test/pack/unpack/serialize/deserialize functions, recognize `IsInitialized` pattern
 5. **SOL-006:** Skip SPL helper functions, expand program ID check patterns
-6. **CW-002:** Skip test-like function names
-7. **CW-006:** Skip test-like function names (`_works`, `_test`, `_mock`, `_should`, `#[test]`)
-8. **CW-007:** Skip test-like function names
-9. **CW-009:** Skip test code (but mock helper functions outside `/tests/` dirs are still caught)
-10. **NEAR-002:** Skip doc comments, string literals, test functions
-11. **NEAR-004:** Skip SDK macro infrastructure, comments, string literals
-12. **INK-003:** Require `&mut self`, proper `self.field =` assignment detection, risk stratification (Critical/High/Medium/Low)
-13. **INK-005:** Skip ERC-20/721 standard methods (approve, transfer, etc.)
-14. **INK-007:** Skip `checked_*.unwrap()` pattern
-15. **INK-008:** Skip common non-Result patterns (callbacks, formatting macros)
+6. **SOL-010:** **v0.3.1:** Skip Anchor codegen files (`constraints.rs`, `__cpi.rs`, generated dirs), codegen function names (`__anchor*`). Recognize intentionally global/singleton PDAs (`b"config"`, `b"metadata"`, `b"state"`, `b"global"`, `b"treasury"`, `b"vault"`, `b"admin"`). Expanded dynamic seed indicators (`payer`, `wallet`, `sender`, `recipient`)
+7. **CW-001:** **v0.3.1:** Downgraded from Medium/Medium to Low/Low (Uint128/256 panics are safe reverts). Skip test/mock/helper functions
+8. **CW-002:** Skip test-like function names. **v0.3.1:** Only flag IBC handlers, reply handlers, and SubMsg dispatchers (CosmWasm is non-reentrant by design, only IBC hooks can circumvent)
+9. **CW-006:** Skip test-like function names (`_works`, `_test`, `_mock`, `_should`, `#[test]`)
+10. **CW-007:** Skip test-like function names
+11. **CW-009:** Skip test code. **v0.3.1:** Skip mock/helper/setup/fixture functions (`mock_*`, `setup*`, `fixture*`, `helper*`, `create_test*`, `default_*`), test-related file paths (`/testing/`, `/mock/`, `/helpers/`, `_helpers.rs`, `test_utils`)
+12. **NEAR-002:** Skip doc comments, string literals, test functions
+13. **NEAR-004:** Skip SDK macro infrastructure, comments, string literals
+14. **INK-003:** Require `&mut self`, proper `self.field =` assignment detection, risk stratification (Critical/High/Medium/Low). **v0.3.1:** Skip known permissionless patterns (`flip`, `increment`, `vote`, `register`), getter prefixes (`get_*`, `is_*`, `has_*`), PSP22/PSP34 standard interface methods (`transfer`, `transfer_from`, `approve`, `increase_allowance`, `decrease_allowance`)
+15. **INK-005:** Skip ERC-20/721 standard methods (approve, transfer, etc.)
+16. **INK-007:** Skip `checked_*.unwrap()` pattern
+17. **INK-008:** Skip common non-Result patterns (callbacks, formatting macros)
 
 ---
 

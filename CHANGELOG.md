@@ -4,6 +4,26 @@ All notable changes to RustDefend will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.3.1] - 2026-02-17
+
+### Added
+
+- **Vulnerability name in findings** — all output formats (text, JSON, SARIF) now show the detector name as a title (e.g. "Missing Owner Check") alongside the detector ID
+- 8 new FP-specific unit tests across 6 detectors (139 total tests)
+
+### Changed
+
+- **CW-001** (integer overflow): Downgraded from Medium/Medium to **Low/Low** — Uint128/Uint256 panics are safe reverts, not exploitable. Skips test/mock/helper functions
+- **CW-002** (reentrancy): Now only flags IBC handlers, reply handlers, and SubMsg dispatchers — CosmWasm is non-reentrant by design. Non-IBC execute handlers no longer flagged
+
+### Fixed
+
+- **SOL-001** FP reduction: Skip internal helpers (`_*`, `inner_*`, `do_*`, `handle_*`), utility functions (`validate*`, `serialize*`, `parse*`), expanded non-signer param exclusions
+- **SOL-010** FP reduction: Skip Anchor codegen files and functions, recognize intentionally global PDAs (`b"config"`, `b"state"`, `b"vault"`, etc.)
+- **INK-003** FP reduction: Skip known permissionless patterns (`flip`, `increment`, `vote`), PSP22/PSP34 standard methods (`transfer`, `approve`)
+- **CW-009** FP reduction: Skip mock/helper/setup functions and test-related file paths
+- Updated test fixtures for SOL-010 and CW-002 to match new FP filters
+
 ## [0.3.0] - 2026-02-16
 
 ### Added
@@ -51,8 +71,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 ### Changed
 
 - **Severity calibration** for 2024+ ecosystem mitigations:
-  - CW-001 (integer overflow): Critical -> Medium (CosmWasm Uint128/256 panics on overflow)
-  - CW-002 (reentrancy): Medium -> Low (CosmWasm actor model is non-reentrant by design)
+  - CW-001 (integer overflow): Critical -> Low (CosmWasm Uint128/256 panics on overflow)
+  - CW-002 (reentrancy): Medium -> Low (CosmWasm actor model is non-reentrant by design, only IBC/reply flagged)
   - INK-002 (integer overflow): Critical -> Low (`cargo-contract` enables overflow-checks by default)
   - SOL-009 (CPI reentrancy): Confidence Medium -> Low (Solana account locking mitigates)
 
