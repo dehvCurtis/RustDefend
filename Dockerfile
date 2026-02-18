@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /build
 COPY Cargo.toml Cargo.lock* ./
 COPY src/ src/
+COPY benches/ benches/
 
 RUN cargo build --release --bin rustdefend \
     && strip target/release/rustdefend
@@ -35,8 +36,8 @@ ENTRYPOINT ["rustdefend"]
 
 LABEL org.opencontainers.image.title="RustDefend" \
       org.opencontainers.image.description="Static security scanner for Rust smart contracts" \
-      org.opencontainers.image.version="0.3.2" \
-      org.opencontainers.image.authors="BlockSecOps" \
-      org.opencontainers.image.url="https://github.com/BlockSecOps/RustDefend" \
-      org.opencontainers.image.source="https://github.com/BlockSecOps/RustDefend" \
+      org.opencontainers.image.version="0.5.0" \
+      org.opencontainers.image.authors="dehvCurtis" \
+      org.opencontainers.image.url="https://github.com/0xStarBridge/RustDefend" \
+      org.opencontainers.image.source="https://github.com/0xStarBridge/RustDefend" \
       org.opencontainers.image.licenses="MIT"
