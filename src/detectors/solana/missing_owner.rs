@@ -90,11 +90,7 @@ impl<'ast, 'a> Visit<'ast> for OwnerVisitor<'a> {
         // Check if any caller in the same file already checks owner (call graph analysis)
         if !has_owner_check {
             let fn_name = func.sig.ident.to_string();
-            if call_graph::caller_has_check(
-                &self.ctx.call_graph,
-                &fn_name,
-                CheckKind::OwnerCheck,
-            ) {
+            if call_graph::caller_has_check(&self.ctx.call_graph, &fn_name, CheckKind::OwnerCheck) {
                 return;
             }
             let line = span_to_line(&func.sig.ident.span());

@@ -68,6 +68,18 @@ pub struct ScanArgs {
     /// Path to the scan cache file (default: <scan_root>/.rustdefend.cache.json)
     #[arg(long)]
     pub cache_path: Option<String>,
+
+    /// Path to custom rules file (TOML format)
+    #[arg(long)]
+    pub rules: Option<String>,
+
+    /// Enable cross-file call graph analysis
+    #[arg(long)]
+    pub cross_file: bool,
+
+    /// Enable type-aware analysis (AST-level type inference)
+    #[arg(long)]
+    pub type_aware: bool,
 }
 
 #[derive(Parser)]

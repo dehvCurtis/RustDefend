@@ -178,7 +178,10 @@ fn main() {
 }
 "#;
         let findings = run_detector(source);
-        assert!(!findings.is_empty(), "Should detect Command::new(\"curl\") in build.rs");
+        assert!(
+            !findings.is_empty(),
+            "Should detect Command::new(\"curl\") in build.rs"
+        );
         assert_eq!(findings[0].detector_id, "DEP-003");
         assert!(findings[0].message.contains("network access"));
     }
@@ -229,7 +232,10 @@ fn main() {
 }
 "#;
         let findings = run_detector(source);
-        assert!(!findings.is_empty(), "Should detect shell execution in build.rs");
+        assert!(
+            !findings.is_empty(),
+            "Should detect shell execution in build.rs"
+        );
     }
 
     #[test]
@@ -242,7 +248,10 @@ fn main() {
 }
 "#;
         let findings = run_detector(source);
-        assert!(!findings.is_empty(), "Should detect reqwest usage in build.rs");
+        assert!(
+            !findings.is_empty(),
+            "Should detect reqwest usage in build.rs"
+        );
     }
 
     #[test]
@@ -253,7 +262,10 @@ fn main() {
 }
 "#;
         let findings = run_detector(source);
-        assert!(!findings.is_empty(), "Should detect fs::write outside OUT_DIR");
+        assert!(
+            !findings.is_empty(),
+            "Should detect fs::write outside OUT_DIR"
+        );
     }
 
     #[test]
@@ -269,6 +281,9 @@ fn main() {
             .iter()
             .filter(|f| f.message.contains("filesystem"))
             .collect();
-        assert!(fs_findings.is_empty(), "Should not flag fs::write to OUT_DIR");
+        assert!(
+            fs_findings.is_empty(),
+            "Should not flag fs::write to OUT_DIR"
+        );
     }
 }

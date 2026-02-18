@@ -150,7 +150,10 @@ mod tests {
         let fp1 = FindingFingerprint::from_finding(&f1, scan_root);
         let fp2 = FindingFingerprint::from_finding(&f2, scan_root);
 
-        assert_eq!(fp1, fp2, "Same fn different line should produce same fingerprint");
+        assert_eq!(
+            fp1, fp2,
+            "Same fn different line should produce same fingerprint"
+        );
     }
 
     #[test]
@@ -173,9 +176,12 @@ mod tests {
     #[test]
     fn test_diff_full_baseline_all_suppressed() {
         let scan_root = Path::new("/project");
-        let findings = vec![
-            make_finding("SOL-001", "/project/src/lib.rs", 10, "Function 'a'"),
-        ];
+        let findings = vec![make_finding(
+            "SOL-001",
+            "/project/src/lib.rs",
+            10,
+            "Function 'a'",
+        )];
 
         let fingerprints = findings
             .iter()
@@ -194,9 +200,12 @@ mod tests {
     #[test]
     fn test_save_load_roundtrip() {
         let scan_root = Path::new("/project");
-        let findings = vec![
-            make_finding("SOL-001", "/project/src/lib.rs", 10, "Function 'foo'"),
-        ];
+        let findings = vec![make_finding(
+            "SOL-001",
+            "/project/src/lib.rs",
+            10,
+            "Function 'foo'",
+        )];
 
         let tmp = std::env::temp_dir().join("rustdefend_baseline_test.json");
         save_baseline(&findings, scan_root, &tmp).unwrap();

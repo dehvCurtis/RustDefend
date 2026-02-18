@@ -216,11 +216,7 @@ impl<'ast, 'a> Visit<'ast> for SignerVisitor<'a> {
 
         // Check if any caller in the same file already checks signer (call graph analysis)
         if !has_signer_check
-            && call_graph::caller_has_check(
-                &self.ctx.call_graph,
-                &fn_name,
-                CheckKind::SignerCheck,
-            )
+            && call_graph::caller_has_check(&self.ctx.call_graph, &fn_name, CheckKind::SignerCheck)
         {
             return;
         }

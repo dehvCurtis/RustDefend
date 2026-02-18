@@ -1,0 +1,58 @@
+{
+  "name": "rustdefend",
+  "displayName": "RustDefend",
+  "description": "Static security scanner for Rust smart contracts",
+  "version": "0.5.0",
+  "publisher": "BlockSecOps",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Linters",
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "workspaceContains:**/Cargo.toml"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "rustdefend.scan",
+        "title": "RustDefend: Scan Project"
+      }
+    ],
+    "configuration": {
+      "title": "RustDefend",
+      "properties": {
+        "rustdefend.binaryPath": {
+          "type": "string",
+          "default": "rustdefend",
+          "description": "Path to the rustdefend binary"
+        },
+        "rustdefend.scanOnSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "Run scan on file save"
+        },
+        "rustdefend.extraArgs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Extra arguments to pass to rustdefend scan"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.80.0",
+    "@types/node": "^18.0.0",
+    "typescript": "^5.0.0"
+  }
+}

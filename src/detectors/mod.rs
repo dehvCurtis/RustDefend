@@ -4,6 +4,8 @@ pub mod ink;
 pub mod near;
 pub mod solana;
 
+use crate::rules::parser::CustomRule;
+use crate::rules::CustomDetector;
 use crate::scanner::context::ScanContext;
 use crate::scanner::finding::{Chain, Confidence, Finding, Severity};
 use crate::scanner::DetectorInfo;
@@ -34,6 +36,15 @@ impl DetectorRegistry {
         common::register(&mut detectors);
 
         Self { detectors }
+    }
+
+    /// Create a registry with custom rules appended.
+    pub fn with_custom_rules(custom_rules: Vec<CustomRule>) -> Self {
+        let mut registry = Self::new();
+        for rule in custom_rules {
+            registry.detectors.push(Box::new(CustomDetector::new(rule)));
+        }
+        registry
     }
 
     pub fn get_detectors(

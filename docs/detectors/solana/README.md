@@ -1,6 +1,6 @@
 # Solana Detectors
 
-16 detectors for Solana smart contracts (native and Anchor).
+21 detectors for Solana smart contracts (native and Anchor).
 
 | ID | Name | Severity | Confidence |
 |----|------|----------|------------|
@@ -20,6 +20,11 @@
 | SOL-014 | init_if_needed reinitialization | High | Medium |
 | SOL-015 | Lookup table manipulation | High | Medium |
 | SOL-016 | Missing priority fee | Low | Low |
+| SOL-017 | Account data matching | High | Medium |
+| SOL-018 | Unsafe account reallocation | High | Medium |
+| SOL-019 | Duplicate mutable accounts | High | Medium |
+| SOL-020 | Checked arithmetic unwrap | Medium | High |
+| SOL-021 | Unvalidated sysvar | Medium | Medium |
 
 ---
 
@@ -133,3 +138,38 @@
 - Detects `set_compute_unit_limit` without `set_compute_unit_price` in the same scope.
 - Transactions without priority fees may be dropped during congestion.
 - Informational finding — not a security vulnerability.
+
+## SOL-017: account-data-matching
+
+- **Severity:** High | **Confidence:** Medium
+- Detects functions that borrow/deserialize account data (`try_borrow_data()`, `data.borrow()`, `try_from_slice()`, `deserialize()`) without field validation (`assert_eq!`, `==`, `require!`, `discriminator`, `is_initialized`).
+- Skips Anchor `Account<'info, T>` + `Context` patterns.
+- Skips functions named `validate`, `verify`, `check`, `parse`, `unpack`.
+
+## SOL-018: unsafe-account-reallocation
+
+- **Severity:** High | **Confidence:** Medium
+- Detects `.realloc()` calls without both a signer check AND a rent/lamport check.
+- Without signer verification, anyone can resize accounts. Without rent check, accounts may lose rent exemption.
+- Skips Anchor `#[account(realloc = ...)]` patterns.
+
+## SOL-019: duplicate-mutable-accounts
+
+- **Severity:** High | **Confidence:** Medium
+- Detects functions with 2+ `AccountInfo` parameters where `try_borrow_mut_data()` / `borrow_mut()` is used without key uniqueness assertion (`key != key`, `assert_ne!`, `require_keys_neq!`).
+- Without uniqueness checks, passing the same account for both params can cause double-spend or state corruption.
+- Skips Anchor `Context<T>` patterns (Anchor validates key uniqueness).
+
+## SOL-020: checked-arithmetic-unwrap
+
+- **Severity:** Medium | **Confidence:** High
+- Detects `.checked_add(...).unwrap()` and similar chains that panic on arithmetic failure.
+- Does NOT flag `.checked_add(...)?.` or `.ok_or(...)?` — those propagate errors correctly.
+- Panicking in a Solana program causes transaction failure with an unhelpful error message.
+
+## SOL-021: unvalidated-sysvar
+
+- **Severity:** Medium | **Confidence:** Medium
+- Detects sysvar parameters (`clock`, `rent`, `epoch_schedule`, etc.) typed as `AccountInfo` without `from_account_info()` or `Sysvar::get()` validation.
+- Without validation, an attacker can pass a fake account instead of the real sysvar.
+- Skips Anchor `Sysvar<'info, T>` type (validates automatically).

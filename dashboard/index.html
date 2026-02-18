@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RustDefend Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>RustDefend Dashboard</h1>
+    <p class="subtitle">Static security scanner for Rust smart contracts</p>
+  </header>
+
+  <main>
+    <section class="controls">
+      <label class="file-input-label" for="file-input">Load JSON Report</label>
+      <input type="file" id="file-input" accept=".json" />
+
+      <div class="filters">
+        <select id="filter-severity">
+          <option value="">All Severities</option>
+          <option value="Critical">Critical</option>
+          <option value="High">High</option>
+          <option value="Medium">Medium</option>
+          <option value="Low">Low</option>
+        </select>
+
+        <select id="filter-chain">
+          <option value="">All Chains</option>
+          <option value="Solana">Solana</option>
+          <option value="CosmWasm">CosmWasm</option>
+          <option value="NEAR">NEAR</option>
+          <option value="ink!">ink!</option>
+        </select>
+
+        <input type="text" id="filter-search" placeholder="Search findings..." />
+      </div>
+
+      <div id="stats" class="stats"></div>
+    </section>
+
+    <section id="table-container">
+      <table id="findings-table">
+        <thead>
+          <tr>
+            <th data-sort="detector_id">ID</th>
+            <th data-sort="name">Name</th>
+            <th data-sort="severity">Severity</th>
+            <th data-sort="confidence">Confidence</th>
+            <th data-sort="chain">Chain</th>
+            <th data-sort="file">File</th>
+            <th data-sort="line">Line</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody id="findings-body">
+          <tr>
+            <td colspan="8" class="empty-state">Load a RustDefend JSON report to view findings</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

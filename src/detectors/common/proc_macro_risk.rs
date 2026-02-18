@@ -49,9 +49,7 @@ fn is_unpinned_version(version: &str) -> bool {
     }
 
     // Unpinned major-only version (e.g., "1" or "2" without minor version)
-    let trimmed = version
-        .trim_start_matches('^')
-        .trim_start_matches('~');
+    let trimmed = version.trim_start_matches('^').trim_start_matches('~');
     if !trimmed.contains('.') {
         if let Ok(_) = trimmed.parse::<u32>() {
             return true;
@@ -223,7 +221,10 @@ version = "0.1.0"
 my_derive = "*"
 "#;
         let findings = run_detector(cargo_toml);
-        assert!(!findings.is_empty(), "Should detect wildcard proc-macro dep");
+        assert!(
+            !findings.is_empty(),
+            "Should detect wildcard proc-macro dep"
+        );
         assert_eq!(findings[0].detector_id, "DEP-004");
         assert!(findings[0].message.contains("proc-macro"));
     }
@@ -253,7 +254,10 @@ version = "0.1.0"
 serde_derive = "1"
 "#;
         let findings = run_detector(cargo_toml);
-        assert!(!findings.is_empty(), "Should detect major-only version for proc-macro");
+        assert!(
+            !findings.is_empty(),
+            "Should detect major-only version for proc-macro"
+        );
     }
 
     #[test]
@@ -267,7 +271,10 @@ version = "0.1.0"
 serde_derive = "1.0.193"
 "#;
         let findings = run_detector(cargo_toml);
-        assert!(findings.is_empty(), "Should not flag version with minor+patch");
+        assert!(
+            findings.is_empty(),
+            "Should not flag version with minor+patch"
+        );
     }
 
     #[test]
@@ -281,7 +288,10 @@ version = "0.1.0"
 my-derive = { git = "https://github.com/example/lib", branch = "main" }
 "#;
         let findings = run_detector(cargo_toml);
-        assert!(!findings.is_empty(), "Should detect unpinned git proc-macro dep");
+        assert!(
+            !findings.is_empty(),
+            "Should detect unpinned git proc-macro dep"
+        );
     }
 
     #[test]

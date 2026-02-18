@@ -39,9 +39,7 @@ pub fn load_config_or_default(scan_root: &Path) -> ProjectConfig {
 
 /// Check if a file path matches any of the ignore patterns.
 pub fn file_is_ignored(file_path: &Path, scan_root: &Path, patterns: &[String]) -> bool {
-    let relative = file_path
-        .strip_prefix(scan_root)
-        .unwrap_or(file_path);
+    let relative = file_path.strip_prefix(scan_root).unwrap_or(file_path);
     let relative_str = relative.to_string_lossy();
 
     for pattern in patterns {
@@ -66,7 +64,8 @@ fn matches_glob_pattern(path: &str, pattern: &str) -> bool {
             return true;
         }
         // Also check if any path component matches
-        return path.contains(&format!("/{}/", prefix)) || path.starts_with(&format!("{}/", prefix));
+        return path.contains(&format!("/{}/", prefix))
+            || path.starts_with(&format!("{}/", prefix));
     }
 
     if pattern.contains('*') {

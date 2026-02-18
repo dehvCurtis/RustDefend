@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::path::{Path, PathBuf};
 
 use quote::ToTokens;
 use syn::visit::Visit;
@@ -157,6 +158,88 @@ impl<'ast> Visit<'ast> for CallCollector {
         }
         syn::visit::visit_expr_method_call(self, node);
     }
+}
+
+/// A crate-level call graph mapping (file_path, fn_name) to FunctionInfo.
+pub type CrateCallGraph = HashMap<(PathBuf, String), FunctionInfo>;
+
+/// Build a crate-level call graph from multiple parsed files.
+/// Each entry is a tuple of (file_path, source, parsed AST, per-file call graph).
+pub fn build_crate_call_graph(files: &[(PathBuf, String, syn::File, CallGraph)]) -> CrateCallGraph {
+    let mut crate_graph = CrateCallGraph::new();
+
+    for (path, _source, _ast, file_graph) in files {
+        for (fn_name, info) in file_graph {
+            crate_graph.insert((path.clone(), fn_name.clone()), info.clone());
+        }
+    }
+
+    crate_graph
+}
+
+/// Check if any caller across the crate already has the given check for a target function.
+/// This extends `caller_has_check` to work across file boundaries.
+pub fn caller_has_check_cross_file(
+    graph: &CrateCallGraph,
+    file: &Path,
+    fn_name: &str,
+    check: CheckKind,
+) -> bool {
+    let mut visited = Vec::new();
+    has_check_in_callers_cross_file(graph, file, fn_name, check, &mut visited, 0)
+}
+
+fn has_check_in_callers_cross_file(
+    graph: &CrateCallGraph,
+    target_file: &Path,
+    target_fn: &str,
+    check: CheckKind,
+    visited: &mut Vec<(PathBuf, String)>,
+    depth: usize,
+) -> bool {
+    if depth >= MAX_DEPTH {
+        return false;
+    }
+
+    for ((caller_file, caller_name), info) in graph {
+        if caller_name == target_fn && caller_file == target_file {
+            continue;
+        }
+
+        let key = (caller_file.clone(), caller_name.clone());
+        if visited.contains(&key) {
+            continue;
+        }
+
+        // Check if this function calls the target
+        if !info.calls.iter().any(|c| c == target_fn) {
+            continue;
+        }
+
+        let has_it = match check {
+            CheckKind::SignerCheck => info.has_signer_check,
+            CheckKind::OwnerCheck => info.has_owner_check,
+            CheckKind::InputValidation => info.has_input_validation,
+        };
+
+        if has_it {
+            return true;
+        }
+
+        visited.push(key);
+        if has_check_in_callers_cross_file(
+            graph,
+            caller_file,
+            caller_name,
+            check,
+            visited,
+            depth + 1,
+        ) {
+            return true;
+        }
+    }
+
+    false
 }
 
 #[cfg(test)]

@@ -446,5 +446,45 @@
     "severity": "High",
     "confidence": "Low",
     "chain": "common"
+  },
+  {
+    "id": "SOL-017",
+    "name": "account-data-matching",
+    "description": "Detects account data deserialization without field validation",
+    "severity": "High",
+    "confidence": "Medium",
+    "chain": "solana"
+  },
+  {
+    "id": "SOL-018",
+    "name": "unsafe-account-reallocation",
+    "description": "Detects .realloc() calls without signer and rent/lamport checks",
+    "severity": "High",
+    "confidence": "Medium",
+    "chain": "solana"
+  },
+  {
+    "id": "SOL-019",
+    "name": "duplicate-mutable-accounts",
+    "description": "Detects functions with multiple mutable AccountInfo params without key uniqueness check",
+    "severity": "High",
+    "confidence": "Medium",
+    "chain": "solana"
+  },
+  {
+    "id": "SOL-020",
+    "name": "checked-arithmetic-unwrap",
+    "description": "Detects .checked_add/sub/mul/div(...).unwrap() chains that panic instead of propagating errors",
+    "severity": "Medium",
+    "confidence": "High",
+    "chain": "solana"
+  },
+  {
+    "id": "SOL-021",
+    "name": "unvalidated-sysvar",
+    "description": "Detects sysvar parameters typed as AccountInfo without proper validation",
+    "severity": "Medium",
+    "confidence": "Medium",
+    "chain": "solana"
   }
 ]

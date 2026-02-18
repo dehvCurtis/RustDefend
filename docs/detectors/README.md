@@ -1,12 +1,12 @@
 # RustDefend Detectors
 
-RustDefend includes **56 detectors** across 4 smart contract ecosystems plus cross-chain dependency analysis.
+RustDefend includes **61 detectors** across 4 smart contract ecosystems plus cross-chain dependency analysis.
 
 ## Detector Categories
 
 | Chain | Count | Detectors |
 |-------|-------|-----------|
-| [Solana](solana/) | 16 | SOL-001 through SOL-016 |
+| [Solana](solana/) | 21 | SOL-001 through SOL-021 |
 | [CosmWasm](cosmwasm/) | 13 | CW-001 through CW-013 |
 | [NEAR](near/) | 12 | NEAR-001 through NEAR-012 |
 | [ink!](ink/) | 11 | INK-001 through INK-011 |
@@ -17,8 +17,8 @@ RustDefend includes **56 detectors** across 4 smart contract ecosystems plus cro
 | Severity | Count |
 |----------|-------|
 | Critical | 12 |
-| High | 27 |
-| Medium | 14 |
+| High | 30 |
+| Medium | 16 |
 | Low | 3 |
 
 ## Machine-Readable Index

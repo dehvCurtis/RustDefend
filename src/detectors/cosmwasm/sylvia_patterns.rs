@@ -141,7 +141,10 @@ mod tests {
             }
         "#;
         let findings = run_detector(source);
-        assert!(!findings.is_empty(), "Should detect exec method without auth check");
+        assert!(
+            !findings.is_empty(),
+            "Should detect exec method without auth check"
+        );
         assert_eq!(findings[0].detector_id, "CW-012");
     }
 
@@ -158,6 +161,9 @@ mod tests {
             }
         "#;
         let findings = run_detector(source);
-        assert!(findings.is_empty(), "Should not flag exec method with sender check");
+        assert!(
+            findings.is_empty(),
+            "Should not flag exec method with sender check"
+        );
     }
 }

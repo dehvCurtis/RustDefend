@@ -3,6 +3,8 @@ pub mod cache;
 pub mod cli;
 pub mod config;
 pub mod detectors;
+pub mod mir;
 pub mod report;
+pub mod rules;
 pub mod scanner;
 pub mod utils;

@@ -1,8 +1,12 @@
 # RustDefend
 
+[![Crates.io](https://img.shields.io/crates/v/rustdefend)](https://crates.io/crates/rustdefend)
+[![CI](https://github.com/BlockSecOps/RustDefend/actions/workflows/ci.yml/badge.svg)](https://github.com/BlockSecOps/RustDefend/actions)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 Static security scanner for Rust smart contracts. Analyzes source code via AST parsing (`syn` crate) to detect vulnerabilities across Solana, CosmWasm, NEAR, and ink! ecosystems.
 
-- **56 detectors** covering the most common smart contract vulnerability classes
+- **61 detectors** covering the most common smart contract vulnerability classes
 - **AST-based analysis** — parses Rust source into syntax trees, no regex pattern matching
 - **Intra-file call graph** — tracks function calls to avoid flagging helpers called from checked entry points
 - **Workspace-aware** — detects chains per-crate in monorepos, eliminating cross-chain noise
@@ -15,6 +19,12 @@ Static security scanner for Rust smart contracts. Analyzes source code via AST p
 - **~65% true positive rate** validated against 6 real-world repositories (SPL, Anchor, cw-plus, NEAR SDK, Neodyme CTF, CosmWasm CTF)
 
 ## Installation
+
+### From crates.io
+
+```bash
+cargo install rustdefend
+```
 
 ### From source
 
@@ -62,6 +72,15 @@ rustdefend scan . --incremental --cache-path .rustdefend.cache.json
 # Project config
 rustdefend scan . --config .rustdefend.toml
 
+# Custom rules (TOML-defined pattern matching)
+rustdefend scan . --rules .rustdefend-rules.toml
+
+# Cross-file call graph analysis
+rustdefend scan . --cross-file
+
+# Type-aware analysis (AST-level type inference)
+rustdefend scan . --type-aware
+
 # List available detectors
 rustdefend list-detectors
 rustdefend list-detectors --chain near
@@ -90,11 +109,11 @@ Pass explicitly with `--config` or place at the project root for auto-detection.
 
 ## Detectors
 
-56 detectors across 4 chains + cross-chain dependency analysis:
+61 detectors across 4 chains + cross-chain dependency analysis:
 
 | Chain | Count | Docs |
 |-------|-------|------|
-| Solana | 16 | [docs/detectors/solana/](docs/detectors/solana/) |
+| Solana | 21 | [docs/detectors/solana/](docs/detectors/solana/) |
 | CosmWasm | 13 | [docs/detectors/cosmwasm/](docs/detectors/cosmwasm/) |
 | NEAR | 12 | [docs/detectors/near/](docs/detectors/near/) |
 | ink! | 11 | [docs/detectors/ink/](docs/detectors/ink/) |

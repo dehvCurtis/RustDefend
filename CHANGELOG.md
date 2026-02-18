@@ -4,6 +4,29 @@ All notable changes to RustDefend will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.5.0] - 2026-02-17
+
+### Added
+
+- **5 new Solana detectors** (61 total, Solana: 21):
+  - SOL-017: Account data matching — detects account data deserialization without field validation (High/Medium)
+  - SOL-018: Unsafe account reallocation — detects `.realloc()` without signer and rent checks (High/Medium)
+  - SOL-019: Duplicate mutable accounts — detects multiple mutable AccountInfo params without key uniqueness assertion (High/Medium)
+  - SOL-020: Checked arithmetic unwrap — detects `.checked_add().unwrap()` chains that panic instead of error propagation (Medium/High)
+  - SOL-021: Unvalidated sysvar — detects sysvar params typed as AccountInfo without validation (Medium/Medium)
+- **Custom rules engine** — define pattern-matching rules in `.rustdefend-rules.toml` without recompiling. `--rules <path>` flag to load custom detectors at runtime
+- **Cross-file call graph analysis** — `--cross-file` flag extends intra-file call graph to crate-level, tracking function calls across file boundaries for more accurate false positive reduction
+- **MIR analysis foundation** (proof of concept) — AST-level type inference extracts type annotations from variable declarations and `use` statements. `--type-aware` flag enables skipping arithmetic on known safe types (Uint128, U256, Decimal, etc.)
+- **VS Code extension scaffold** — `vscode-extension/` directory with TypeScript extension that spawns `rustdefend scan --format sarif`, parses output, and creates VS Code diagnostic markers
+- **Web dashboard scaffold** — `dashboard/` directory with static HTML/CSS/JS app for loading and viewing RustDefend JSON reports with sortable/filterable table and expandable detail rows
+- **crates.io publishing metadata** — repository, homepage, readme, keywords, categories, authors, exclude fields added to Cargo.toml
+- **Community submission docs** — `docs/awesome-list-submission.md` with formatted descriptions for awesome-rust, awesome-solana-security, awesome-cosmwasm
+
+### Changed
+
+- Detector count: 56 → 61
+- Solana detector count: 16 → 21
+
 ## [0.4.0] - 2026-02-17
 
 ### Added

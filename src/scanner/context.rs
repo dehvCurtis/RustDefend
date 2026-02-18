@@ -1,7 +1,8 @@
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use crate::scanner::finding::Chain;
-use crate::utils::call_graph::CallGraph;
+use crate::utils::call_graph::{CallGraph, CrateCallGraph};
 
 pub struct ScanContext {
     pub file_path: PathBuf,
@@ -9,6 +10,7 @@ pub struct ScanContext {
     pub ast: syn::File,
     pub chain: Chain,
     pub call_graph: CallGraph,
+    pub crate_call_graph: Option<Arc<CrateCallGraph>>,
 }
 
 impl ScanContext {
@@ -25,7 +27,13 @@ impl ScanContext {
             ast,
             chain,
             call_graph,
+            crate_call_graph: None,
         }
+    }
+
+    pub fn with_crate_call_graph(mut self, graph: Arc<CrateCallGraph>) -> Self {
+        self.crate_call_graph = Some(graph);
+        self
     }
 
     /// Returns the source line at 1-based line number.

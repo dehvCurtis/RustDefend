@@ -2,6 +2,7 @@ pub mod context;
 pub mod finding;
 
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
 use anyhow::Result;
 use rayon::prelude::*;
@@ -11,6 +12,7 @@ use crate::detectors::common::outdated_deps::OutdatedDepsDetector;
 use crate::detectors::common::proc_macro_risk::ProcMacroRiskDetector;
 use crate::detectors::common::supply_chain::SupplyChainDetector;
 use crate::detectors::DetectorRegistry;
+use crate::rules::parser::CustomRule;
 use crate::utils::call_graph;
 use crate::utils::chain_detect;
 use crate::utils::workspace;
@@ -25,6 +27,7 @@ pub struct Scanner {
     filter_detectors: Option<Vec<String>>,
     ignore_files: Option<(Vec<String>, PathBuf)>,
     cache_path: Option<PathBuf>,
+    cross_file: bool,
 }
 
 impl Scanner {
@@ -37,6 +40,7 @@ impl Scanner {
             filter_detectors: None,
             ignore_files: None,
             cache_path: None,
+            cross_file: false,
         }
     }
 
@@ -67,6 +71,16 @@ impl Scanner {
 
     pub fn with_cache(mut self, cache_path: PathBuf) -> Self {
         self.cache_path = Some(cache_path);
+        self
+    }
+
+    pub fn with_custom_rules(mut self, rules: Vec<CustomRule>) -> Self {
+        self.registry = DetectorRegistry::with_custom_rules(rules);
+        self
+    }
+
+    pub fn with_cross_file(mut self, enabled: bool) -> Self {
+        self.cross_file = enabled;
         self
     }
 
@@ -116,7 +130,25 @@ impl Scanner {
             self.filter_detectors.as_deref(),
         );
 
-        // Process files in parallel
+        // Cross-file mode: Pass 1 — parse all files and build crate call graph
+        let crate_call_graph: Option<Arc<call_graph::CrateCallGraph>> = if self.cross_file {
+            // Collect per-file call graphs (sequentially to avoid Send issues with syn types)
+            let mut file_graphs: Vec<(PathBuf, String, syn::File, call_graph::CallGraph)> =
+                Vec::new();
+            for file_path in &rust_files {
+                if let Ok(source) = std::fs::read_to_string(file_path) {
+                    if let Ok(ast) = syn::parse_file(&source) {
+                        let graph = call_graph::build_call_graph(&ast);
+                        file_graphs.push((file_path.clone(), source, ast, graph));
+                    }
+                }
+            }
+            Some(Arc::new(call_graph::build_crate_call_graph(&file_graphs)))
+        } else {
+            None
+        };
+
+        // Pass 2: Process files in parallel (with optional crate call graph)
         let file_results: Vec<(PathBuf, u64, Vec<Finding>)> = rust_files
             .par_iter()
             .flat_map(|file_path| {
@@ -157,13 +189,17 @@ impl Scanner {
                 // Run each chain's detectors against this file
                 let mut file_findings = Vec::new();
                 for &chain in &file_chains {
-                    let ctx = ScanContext::new(
+                    let mut ctx = ScanContext::new(
                         file_path.clone(),
                         source.clone(),
                         ast.clone(),
                         chain,
                         graph.clone(),
                     );
+
+                    if let Some(ref ccg) = crate_call_graph {
+                        ctx = ctx.with_crate_call_graph(Arc::clone(ccg));
+                    }
 
                     for detector in &detectors {
                         if detector.chain() != chain {

@@ -73,8 +73,7 @@ impl<'ast, 'a> Visit<'ast> for MigrationVisitor<'a> {
         // Check for deprecated API patterns
         for (deprecated, replacement) in DEPRECATED_PATTERNS {
             // Match the deprecated pattern but not if it's already the replacement
-            let has_deprecated = body_src.contains(deprecated)
-                && !body_src.contains(replacement);
+            let has_deprecated = body_src.contains(deprecated) && !body_src.contains(replacement);
 
             if has_deprecated {
                 let line = span_to_line(&func.sig.ident.span());
@@ -160,7 +159,10 @@ mod tests {
             }
         "#;
         let findings = run_detector(source);
-        assert!(!findings.is_empty(), "Should detect deprecated from_binary usage");
+        assert!(
+            !findings.is_empty(),
+            "Should detect deprecated from_binary usage"
+        );
         assert!(
             findings.iter().any(|f| f.message.contains("from_binary")),
             "Should mention from_binary in finding"
@@ -180,6 +182,9 @@ mod tests {
             }
         "#;
         let findings = run_detector(source);
-        assert!(findings.is_empty(), "Should not flag modern cosmwasm-std 2.x API usage");
+        assert!(
+            findings.is_empty(),
+            "Should not flag modern cosmwasm-std 2.x API usage"
+        );
     }
 }

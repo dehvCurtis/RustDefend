@@ -38,14 +38,35 @@ fn run_scan(args: rustdefend::cli::ScanArgs) -> Result<()> {
     // Load project config
     let project_config = if let Some(ref config_path) = args.config {
         config::load_project_config(Path::new(config_path)).unwrap_or_else(|e| {
-            eprintln!("{} Failed to load config: {}", "Warning:".yellow().bold(), e);
+            eprintln!(
+                "{} Failed to load config: {}",
+                "Warning:".yellow().bold(),
+                e
+            );
             config::ProjectConfig::default()
         })
     } else {
         config::load_config_or_default(path)
     };
 
-    let mut scanner = Scanner::new();
+    // Load custom rules if provided
+    let mut scanner = if let Some(ref rules_path) = args.rules {
+        let rules = rustdefend::rules::load_rules(Path::new(rules_path)).unwrap_or_else(|e| {
+            eprintln!("{} Failed to load rules: {}", "Warning:".yellow().bold(), e);
+            Vec::new()
+        });
+        if !rules.is_empty() {
+            eprintln!(
+                "{} Loaded {} custom rules from {}",
+                "Info:".blue().bold(),
+                rules.len(),
+                rules_path
+            );
+        }
+        Scanner::new().with_custom_rules(rules)
+    } else {
+        Scanner::new()
+    };
 
     // Apply chain filter
     if let Some(ref chain_str) = args.chain {
@@ -89,7 +110,13 @@ fn run_scan(args: rustdefend::cli::ScanArgs) -> Result<()> {
 
     // Apply config ignore_files to scanner
     if !project_config.ignore_files.is_empty() {
-        scanner = scanner.with_ignore_files(project_config.ignore_files.clone(), path.to_path_buf());
+        scanner =
+            scanner.with_ignore_files(project_config.ignore_files.clone(), path.to_path_buf());
+    }
+
+    // Apply cross-file analysis
+    if args.cross_file {
+        scanner = scanner.with_cross_file(true);
     }
 
     // Apply incremental cache

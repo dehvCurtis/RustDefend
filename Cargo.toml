@@ -1,9 +1,16 @@
 [package]
 name = "rustdefend"
-version = "0.4.0"
+version = "0.5.0"
 edition = "2021"
 description = "Static security scanner for Rust smart contracts"
 license = "MIT"
+repository = "https://github.com/BlockSecOps/RustDefend"
+homepage = "https://github.com/BlockSecOps/RustDefend"
+readme = "README.md"
+keywords = ["security", "smart-contracts", "solana", "cosmwasm", "static-analysis"]
+categories = ["development-tools", "command-line-utilities"]
+authors = ["dehvCurtis"]
+exclude = ["test-contracts/**", "test-fixtures/**", "releases/**", "target/**", ".github/**", "benches/**", "dashboard/**", "vscode-extension/**"]
 
 [dependencies]
 syn = { version = "2", features = ["full", "visit", "extra-traits"] }
